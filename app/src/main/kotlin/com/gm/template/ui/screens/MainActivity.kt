@@ -8,6 +8,7 @@ import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.IBinder
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -78,12 +79,15 @@ class MainActivity : AppCompatActivity(), MainActivityInterface, ServiceConnecti
             val bindIntent = Intent()
             bindIntent.setClassName(plugin.servicePackageName, plugin.serviceName)
             mainViewModel.actionName = pluginActionName
-//            Log.i("Terry", "Before bindService")
             context.bindService(bindIntent, this, BIND_AUTO_CREATE)
-//            Log.i("Terry", "After bindService")
             mainViewModel.mIsBound = true
         } else {
-//            Log.i("Terry", "Did not load!!!")
+            CoroutineScope(Main).launch {
+                Toast.makeText(
+                    this@MainActivity,
+                    "Plugin did not load",
+                    Toast.LENGTH_LONG).show()
+            }
         }
     }
 
@@ -112,34 +116,19 @@ class MainActivity : AppCompatActivity(), MainActivityInterface, ServiceConnecti
 
 
     override fun onServiceDisconnected(componentName: ComponentName?) {}
-    override fun onServiceConnected(componentName: ComponentName?, binder: IBinder?) {
-//        CoroutineScope(Main).launch {
-//        Log.i("Terry", "onServiceConnected bindService")
-        CoroutineScope(Main).launch {
-//            Log.i("Terry", "getting pluginInterface ")
-            val pluginInterface: IPluginInterface? = IPluginInterface.Stub.asInterface(binder)
-//            Log.i("Terry", "got pluginInterface ")
 
+    override fun onServiceConnected(componentName: ComponentName?, binder: IBinder?) {
+        CoroutineScope(Main).launch {
+            val pluginInterface: IPluginInterface? = IPluginInterface.Stub.asInterface(binder)
             if(pluginInterface !=null ) {
                 try {
                     pluginInterface.registerFragment("some fragment name")
-//                    Log.i("Terry", "pluginInterface was not null ")
-
-//                    Log.i("Terry", "mainViewModel.actionName = ${mainViewModel.actionName}")
-
-
                     val pluginFragment: PluginFragment? =
                         PluginManager.getInstance(context).getPluginFragmentByName(mainViewModel.actionName)
-
-
                     pluginFragment?.argument = mainViewModel.mArguments
-                    pluginFragment?.let { plugin ->
-//                        Log.i("Terry", "pluginFragment was not null")
-
-                        loadFragment(plugin, false)
-                    }
+                    pluginFragment?.let { plugin -> loadFragment(plugin, false) }
                 } catch (e: Exception) {
-//                    Log.i("E", "Something wrong")
+                    Log.i("E", "Something wrong")
                 }
 
                 if (mainViewModel.mIsBound) {
@@ -179,7 +168,6 @@ class MainActivity : AppCompatActivity(), MainActivityInterface, ServiceConnecti
                                             Toast.LENGTH_LONG).show()
                                     }
 
-                                    // Call navigate again here or after user taps again in the UI:
                                     navController.navigate(
                                         pluginFragment.navGraphId, null,
                                         navOptions, null)
@@ -195,7 +183,6 @@ class MainActivity : AppCompatActivity(), MainActivityInterface, ServiceConnecti
                                     //SplitInstallManager.startConfirmationDialogForResult(...)
                                 }
 
-                                // Handle all remaining states:
                                 SplitInstallSessionStatus.FAILED -> {
                                     CoroutineScope(Main).launch {
                                         Toast.makeText(

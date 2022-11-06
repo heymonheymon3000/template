@@ -12,6 +12,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.gm.template.BuildConfig
 
 @Composable
 fun LoginScreen() {
@@ -22,7 +23,7 @@ fun LoginScreen() {
 
         Text(
 
-            text = "Hello Login Module",
+            text = "Hello Login Module - ${BuildConfig.VERSION_CODE}",
             color = if (isSystemInDarkTheme()) {
                 MaterialTheme.colors.onPrimary
             } else {

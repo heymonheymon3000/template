@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.gm.template.BuildConfig
 import com.gm.template.ui.MainActivityInterface
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
@@ -29,7 +30,7 @@ fun StartScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Hello Start up Fragment",
+            text = "Hello Start up Fragment - ${BuildConfig.VERSION_CODE}",
             color = if (isSystemInDarkTheme()) {
                 MaterialTheme.colors.onPrimary
             } else {
@@ -52,7 +53,7 @@ fun StartScreen(
             }
         ) {
             Text(
-                text = "Login Module",
+                text = "Login Module - ${BuildConfig.VERSION_CODE}",
                 style = MaterialTheme.typography.button
             )
         }
