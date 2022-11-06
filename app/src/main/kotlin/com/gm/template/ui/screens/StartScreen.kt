@@ -43,12 +43,14 @@ fun StartScreen(
 
         Button(colors = ButtonDefaults.buttonColors(
             backgroundColor = Color(0xFF1E56A0)),
-            modifier = Modifier
-                .width(240.dp)
-                .height(44.dp),
+            modifier = Modifier.width(240.dp).height(44.dp),
             onClick = {
-                scope.launch(Main) {
-                    mainActivityInterface.loadFragmentByAction("login", false, HashMap())
+                scope.launch {
+                    mainActivityInterface
+                        .loadFragmentByAction(
+                            "login",
+                            false,
+                            HashMap())
                 }
             }
         ) {
