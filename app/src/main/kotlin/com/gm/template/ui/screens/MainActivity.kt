@@ -8,7 +8,6 @@ import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.IBinder
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
@@ -33,7 +32,6 @@ import java.util.ArrayList
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), MainActivityInterface, ServiceConnection {
-//    private val TAG = MainActivity::class.java.simpleName
     private val mainViewModel: MainViewModel by viewModels()
     private lateinit var navController: NavController
     private lateinit var navHostFragment: NavHostFragment
@@ -42,8 +40,6 @@ class MainActivity : AppCompatActivity(), MainActivityInterface, ServiceConnecti
     private var _binding: ActivityMainBinding? = null
     // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
-
-    //protected var pluginIdentifier: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,12 +73,12 @@ class MainActivity : AppCompatActivity(), MainActivityInterface, ServiceConnecti
             val bindIntent = Intent()
             bindIntent.setClassName(plugin.servicePackageName, plugin.serviceName)
             mainViewModel.actionName = pluginActionName
-            Log.i("Terry", "Before bindService")
+//            Log.i("Terry", "Before bindService")
             context.bindService(bindIntent, this, BIND_AUTO_CREATE)
-            Log.i("Terry", "After bindService")
+//            Log.i("Terry", "After bindService")
             mainViewModel.mIsBound = true
         } else {
-            Log.i("Terry", "Did not load!!!")
+//            Log.i("Terry", "Did not load!!!")
         }
     }
 
@@ -113,18 +109,18 @@ class MainActivity : AppCompatActivity(), MainActivityInterface, ServiceConnecti
     override fun onServiceDisconnected(componentName: ComponentName?) {}
     override fun onServiceConnected(componentName: ComponentName?, binder: IBinder?) {
 //        CoroutineScope(Main).launch {
-        Log.i("Terry", "onServiceConnected bindService")
+//        Log.i("Terry", "onServiceConnected bindService")
         runOnUiThread {
-            Log.i("Terry", "getting pluginInterface ")
+//            Log.i("Terry", "getting pluginInterface ")
             val pluginInterface: IPluginInterface? = IPluginInterface.Stub.asInterface(binder)
-            Log.i("Terry", "got pluginInterface ")
+//            Log.i("Terry", "got pluginInterface ")
 
             if(pluginInterface !=null ) {
                 try {
                     pluginInterface.registerFragment("some fragment name")
-                    Log.i("Terry", "pluginInterface was not null ")
+//                    Log.i("Terry", "pluginInterface was not null ")
 
-                    Log.i("Terry", "mainViewModel.actionName = ${mainViewModel.actionName}")
+//                    Log.i("Terry", "mainViewModel.actionName = ${mainViewModel.actionName}")
 
 
                     val pluginFragment: PluginFragment? =
@@ -133,12 +129,12 @@ class MainActivity : AppCompatActivity(), MainActivityInterface, ServiceConnecti
 
                     pluginFragment?.argument = mainViewModel.mArguments
                     pluginFragment?.let { plugin ->
-                        Log.i("Terry", "pluginFragment was not null")
+//                        Log.i("Terry", "pluginFragment was not null")
 
                         loadFragment(plugin, false)
                     }
                 } catch (e: Exception) {
-                    Log.i("E", "Something wrong")
+//                    Log.i("E", "Something wrong")
                 }
 
                 if (mainViewModel.mIsBound) {
@@ -257,7 +253,7 @@ class MainActivity : AppCompatActivity(), MainActivityInterface, ServiceConnecti
                         }
                     })
             } else {
-                Log.i("Terry", "ALREADY SplitInstallSessionStatus.INSTALLING")
+//                Log.i("Terry", "ALREADY SplitInstallSessionStatus.INSTALLING")
 //                    val text = "ALREADY installed!!"
 //                    val toast = Toast.makeText(this, "text", duration)
                // CoroutineScope(Main).launch {  toast.show() }
