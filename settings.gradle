@@ -1,0 +1,52 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+        mavenLocal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+        mavenLocal()
+    }
+}
+
+rootProject.name = "Template"
+rootProject.buildFileName = "build.gradle.kts"
+
+// App
+include ':app'
+
+// Common
+include ':app:common'
+include ':app:common:common-datasource'
+include ':app:common:common-datasource-test'
+include ':app:common:common-domain'
+include ':app:common:common-interactors'
+
+// Components
+include ':app:components'
+
+// Constants
+include ':app:constants'
+
+// Core
+include ':app:core'
+
+// Plugin
+include ':app:plugin'
+
+// Features
+include ':features'
+// Login
+include ':features:login:login-datasource'
+include ':features:login:login-datasource-test'
+include ':features:login:login-domain'
+include ':features:login:login-interactors'
+include ':features:login:ui_login'
+

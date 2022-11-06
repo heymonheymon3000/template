@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:dist="http://schemas.android.com/apk/distribution">
+
+    <dist:module dist:title="@string/ui_login">
+        <dist:delivery>
+            <dist:install-time/>
+        </dist:delivery>
+        <dist:fusing dist:include="true" />
+    </dist:module>
+
+    <application
+        android:supportsRtl="true">
+        <service
+            android:name="com.gm.template.ui_login.plugin.PluginLogin"
+            android:exported="true"
+            android:permission="com.gm.template.plugin_permission">
+            <intent-filter>
+                <action
+                    android:name="com.gm.template.LOGIN_PLUGIN"
+                    android:screenOrientation="portrait" />
+                <action android:name="login" />
+            </intent-filter>
+
+            <meta-data
+                android:name="com.gm.template.META_DATA_PLUGIN_NAME"
+                android:value="Login" />
+        </service>
+
+    </application>
+
+
+</manifest>

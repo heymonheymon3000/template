@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    android:label="nav_graph"
+    app:startDestination="@id/start_fragment">
+
+    <fragment
+        android:id="@+id/start_fragment"
+        android:name="com.gm.template.ui.screens.StartFragment"
+        android:label="start_fragment">
+        <action
+            android:id="@+id/start_fragment_to_login_nav_graph"
+            app:destination="@id/login_nav_graph" />
+    </fragment>
+
+    <include-dynamic
+        android:id="@+id/login_nav_graph"
+        android:label="login_nav_graph"
+        app:graphResName="login_nav_graph"
+        app:moduleName="ui_login">
+    </include-dynamic>
+
+</navigation>

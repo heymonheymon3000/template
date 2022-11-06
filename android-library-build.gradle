@@ -1,0 +1,65 @@
+// build.gradle.kts for android libraries that contain UI
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'kotlin-parcelize'
+
+android {
+    compileSdkVersion Android.compileSdk
+    buildToolsVersion Android.buildTools
+
+    defaultConfig {
+        vectorDrawables.useSupportLibrary = true
+        minSdkVersion Android.minSdk
+        targetSdkVersion Android.targetSdk
+        versionName Android.versionName
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = '11'
+    }
+
+    buildFeatures {
+        compose true
+        viewBinding = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion Compose.kotlinCompilerExtensionVersion
+    }
+
+    packagingOptions {
+        exclude("META-INF/AL2.0")
+        exclude("META-INF/LGPL2.1")
+    }
+
+    kapt {
+        correctErrorTypes = true
+    }
+}
+
+dependencies{
+    implementation AndroidX.coreKtx
+    implementation AndroidX.appCompat
+    implementation AndroidX.lifecycleVmKtx
+
+    api (Google.gson)
+
+    implementation Hilt.android
+    kapt Hilt.compiler
+}
+
