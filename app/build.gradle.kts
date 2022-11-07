@@ -97,8 +97,6 @@ dependencies {
     kapt (Hilt.compiler)
 
     api (Google.play_core)
-    api (Google.play_delivery)
-
 
 //    "implementation"(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 //

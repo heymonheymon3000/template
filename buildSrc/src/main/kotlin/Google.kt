@@ -25,9 +25,6 @@ object Google {
     private const val play_core_version = "1.10.3"
     const val play_core = "com.google.android.play:core:$play_core_version"
 
-    private const val play_delivery_version = "2.0.0"
-    const val play_delivery = "com.google.android.play:feature-delivery-ktx:$play_delivery_version"
-
     private const val guava_version = "31.1-android"
     const val guava = "com.google.guava:guava:$guava_version"
 
