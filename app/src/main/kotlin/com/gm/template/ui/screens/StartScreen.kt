@@ -21,8 +21,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun StartScreen(
-    mainActivityInterface: MainActivityInterface
-) {
+    mainActivityInterface: MainActivityInterface)
+{
     val scope = rememberCoroutineScope()
 
     Column(modifier = Modifier.fillMaxWidth(),
@@ -45,12 +45,11 @@ fun StartScreen(
             backgroundColor = Color(0xFF1E56A0)),
             modifier = Modifier.width(240.dp).height(44.dp),
             onClick = {
-                scope.launch {
-                    mainActivityInterface
-                        .loadFragmentByAction(
-                            "login",
-                            false,
-                            HashMap())
+                scope.launch(Main) {
+                    mainActivityInterface.loadFragmentByAction(
+                        pluginActionName = "login",
+                        addToBackStack = false,
+                        arguments = HashMap())
                 }
             }
         ) {

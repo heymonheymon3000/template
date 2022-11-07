@@ -19,6 +19,7 @@ import androidx.navigation.NavOptions
 import androidx.navigation.dynamicfeatures.DynamicExtras
 import androidx.navigation.dynamicfeatures.DynamicInstallMonitor
 import androidx.navigation.dynamicfeatures.fragment.DynamicNavHostFragment
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import com.gm.template.R
 import com.gm.template.databinding.ActivityMainBinding
@@ -28,7 +29,11 @@ import com.gm.template.plugin.PluginFragment
 import com.gm.template.plugin.PluginManager
 import com.gm.template.ui.MainActivityInterface
 import com.gm.template.ui.MainViewModel
+import com.google.android.play.core.splitcompat.SplitCompat
+import com.google.android.play.core.splitinstall.SplitInstallManagerFactory
+import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.google.android.play.core.splitinstall.SplitInstallSessionState
+import com.google.android.play.core.splitinstall.SplitInstallStateUpdatedListener
 import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -65,6 +70,7 @@ class MainActivity : AppCompatActivity(), MainActivityInterface, ServiceConnecti
     override fun attachBaseContext(newBase: Context) {
         context = newBase
         super.attachBaseContext(newBase)
+        SplitCompat.install(this)
     }
 
 //    private fun loadPlugins() {
@@ -72,24 +78,59 @@ class MainActivity : AppCompatActivity(), MainActivityInterface, ServiceConnecti
 //        loadFragmentByAction("login", false, HashMap())
 //    }
 
+    private var sessionId = 0
     override fun loadFragmentByAction(pluginActionName: String, addToBackStack: Boolean, arguments: HashMap<String, Any>) {
-        val plugins = findPluginByActionName(pluginActionName)
-        if (plugins.isNotEmpty()) {
-            val plugin = plugins[0]
-            val bindIntent = Intent()
-            bindIntent.setClassName(plugin.servicePackageName, plugin.serviceName)
-            mainViewModel.actionName = pluginActionName
-            context.bindService(bindIntent, this, BIND_AUTO_CREATE)
-            mainViewModel.mIsBound = true
-        } else {
-            CoroutineScope(Main).launch {
-                Toast.makeText(
-                    this@MainActivity,
-                    "Plugin did not load",
-                    Toast.LENGTH_LONG).show()
-            }
+        val installMonitor = DynamicInstallMonitor()
+
+        navController.navigate(
+            StartFragmentDirections.startFragmentToLoginNavGraph(),
+            DynamicExtras(installMonitor))
+
+        if (installMonitor.isInstallRequired) {
+            installMonitor.status.observe(this,
+                object : Observer<SplitInstallSessionState> {
+                    override fun onChanged(sessionState: SplitInstallSessionState) {
+                        when (sessionState.status()) {
+                            SplitInstallSessionStatus.INSTALLED -> {
+                                navController.navigate(StartFragmentDirections.startFragmentToLoginNavGraph())
+                            }
+
+                            SplitInstallSessionStatus.REQUIRES_USER_CONFIRMATION -> {}
+                            SplitInstallSessionStatus.FAILED -> {}
+                            SplitInstallSessionStatus.CANCELED -> {}
+                            SplitInstallSessionStatus.CANCELING -> {}
+                            SplitInstallSessionStatus.DOWNLOADED -> {}
+                            SplitInstallSessionStatus.DOWNLOADING -> {}
+                            SplitInstallSessionStatus.INSTALLING -> {}
+                            SplitInstallSessionStatus.PENDING -> {}
+                            SplitInstallSessionStatus.UNKNOWN -> {}
+                        }
+
+                        if (sessionState.hasTerminalStatus()) {
+                            installMonitor.status.removeObserver(this)
+                        }
+                    }
+                }
+            )
         }
     }
+//        val plugins = findPluginByActionName(pluginActionName)
+//        if (plugins.isNotEmpty()) {
+//            val plugin = plugins[0]
+//            val bindIntent = Intent()
+//            bindIntent.setClassName(plugin.servicePackageName, plugin.serviceName)
+//            mainViewModel.actionName = pluginActionName
+//            context.bindService(bindIntent, this, BIND_AUTO_CREATE)
+//            mainViewModel.mIsBound = true
+//        } else {
+//            CoroutineScope(Main).launch {
+//                Toast.makeText(
+//                    this@MainActivity,
+//                    "Plugin did not load",
+//                    Toast.LENGTH_LONG).show()
+//            }
+//        }
+//    }
 
     @SuppressLint("QueryPermissionsNeeded")
     override fun findPluginByActionName(actionName: String): List<Plugin> {

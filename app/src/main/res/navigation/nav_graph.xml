@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/nav_graph"
     android:label="nav_graph"
-    app:startDestination="@id/start_fragment">
+    app:startDestination="@id/start_fragment"
+    app:progressDestination="@+id/templateProgressFragment">
 
     <fragment
         android:id="@+id/start_fragment"
@@ -18,7 +19,12 @@
         android:id="@+id/login_nav_graph"
         android:label="login_nav_graph"
         app:graphResName="login_nav_graph"
+        app:graphPackage="com.gm.template.ui_login"
         app:moduleName="ui_login">
     </include-dynamic>
+
+    <fragment
+        android:id="@+id/templateProgressFragment"
+        android:name="com.gm.template.ui.screens.TemplateProgressFragment" />
 
 </navigation>

@@ -12,4 +12,10 @@
 
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+
+    <string name="installing_module_failed">Installing module failed</string>
+    <string name="installing_module_cancelled">Installing module cancelled</string>
+    <string name="installing_notes_module">Installing notes module …</string>
+    <string name="module_icon">Module icon</string>
+
 </resources>

@@ -95,7 +95,10 @@ dependencies {
     kapt (Hilt.hilt_compiler)
     api (Hilt.android)
     kapt (Hilt.compiler)
-    api ("com.google.android.play:core:1.10.3")
+
+    api (Google.play_core)
+    api (Google.play_delivery)
+
 
 //    "implementation"(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 //
@@ -207,4 +210,5 @@ plugins {
     id("dagger.hilt.android.plugin")
     kotlin(KotlinPlugins.serialization) version Kotlin.version
     id("kotlin-parcelize")
+    id("androidx.navigation.safeargs.kotlin")
 }

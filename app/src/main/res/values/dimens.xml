@@ -1,3 +1,11 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
+    <dimen name="horizontal_margin">16dp</dimen>
+    <dimen name="vertical_margin">16dp</dimen>
+
+    <dimen name="garden_section_width">64dp</dimen>
+    <dimen name="garden_section_height">64dp</dimen>
+
+    <dimen name="garden_section_info_icon_width">64dp</dimen>
+    <dimen name="garden_section_info_icon_height">64dp</dimen>
 </resources>

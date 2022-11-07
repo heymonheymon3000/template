@@ -20,11 +20,7 @@ class StartFragment: BaseFragment() {
     ): View {
         return ComposeView(requireContext()).apply {
             setContent {
-                TemplateTheme {
-                    mainActivityInterface?.let {
-                        StartScreen(mainActivityInterface = it)
-                    }
-                }
+                TemplateTheme { mainActivityInterface?.let { StartScreen(mainActivityInterface = it) } }
             }
         }
     }
