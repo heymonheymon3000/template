@@ -19,7 +19,6 @@ import androidx.navigation.NavOptions
 import androidx.navigation.dynamicfeatures.DynamicExtras
 import androidx.navigation.dynamicfeatures.DynamicInstallMonitor
 import androidx.navigation.dynamicfeatures.fragment.DynamicNavHostFragment
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import com.gm.template.R
 import com.gm.template.databinding.ActivityMainBinding
@@ -30,10 +29,7 @@ import com.gm.template.plugin.PluginManager
 import com.gm.template.ui.MainActivityInterface
 import com.gm.template.ui.MainViewModel
 import com.google.android.play.core.splitcompat.SplitCompat
-import com.google.android.play.core.splitinstall.SplitInstallManagerFactory
-import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.google.android.play.core.splitinstall.SplitInstallSessionState
-import com.google.android.play.core.splitinstall.SplitInstallStateUpdatedListener
 import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -78,7 +74,6 @@ class MainActivity : AppCompatActivity(), MainActivityInterface, ServiceConnecti
 //        loadFragmentByAction("login", false, HashMap())
 //    }
 
-    private var sessionId = 0
     override fun loadFragmentByAction(pluginActionName: String, addToBackStack: Boolean, arguments: HashMap<String, Any>) {
         val installMonitor = DynamicInstallMonitor()
 
