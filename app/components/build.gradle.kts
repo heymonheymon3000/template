@@ -7,7 +7,6 @@ plugins {
 }
 
 dependencies {
-
     "api"(project(Modules.common_datasource))
     "api"(project(Modules.common_datasource_test))
     "api"(project(Modules.common_domain))
@@ -25,7 +24,6 @@ dependencies {
     "api"(AndroidX.lifecycleVmKtx)
     "api"(AndroidX.lifecycleRunTimeKtx)
 
-
     "api" (Compose.activity)
     "api" (Compose.composeAnimation)
     "api" (Compose.ui)
@@ -39,12 +37,10 @@ dependencies {
 
     "api" (Coil.coil)
 
-
     "api" (Dagger.dagger)
     "api" (Dagger.dagger_android)
     "kapt" (Hilt.hilt_compiler)
     "api" (Hilt.android)
     "kapt" (Hilt.compiler)
-
 }
 

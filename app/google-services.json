@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "492056701218",
+    "project_id": "android-dfm2",
+    "storage_bucket": "android-dfm2.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:492056701218:android:c2531704a84be3cc4a9d7b",
+        "android_client_info": {
+          "package_name": "com.gm.template2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "492056701218-cb8r48a0udpi0u9th6j6frl124d5f9pb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDTxnBKS6BjWT-80fZ3V5S5U-VmozjOTp8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "492056701218-cb8r48a0udpi0u9th6j6frl124d5f9pb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

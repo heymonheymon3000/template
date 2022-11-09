@@ -16,7 +16,8 @@ android {
         targetSdk = Android.targetSdk
         versionCode = Android.versionCode
         versionName = Android.versionName
-        vectorDrawables.useSupportLibrary = true
+//        vectorDrawables.useSupportLibrary = true
+//        multiDexEnabled  = true
 
         // testInstrumentationRunner = "com.gm.csmt.CustomTestRunner"
         //setProperty("archivesBaseName", "csmt-" + defaultConfig.versionName + "-" + defaultConfig.versionCode)
@@ -43,8 +44,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
     kotlinOptions {
@@ -98,6 +99,10 @@ dependencies {
 
     api (Google.play_core)
 
+    // Import the BoM for the Firebase platform
+    api (platform(Google.firebaseBom))
+    api (Google.firebaseCrashlytics)
+    api (Google.analytics)
 //    "implementation"(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 //
 //    "api"(project(Modules.acoustic, configuration = "default"))
@@ -209,4 +214,8 @@ plugins {
     kotlin(KotlinPlugins.serialization) version Kotlin.version
     id("kotlin-parcelize")
     id("androidx.navigation.safeargs.kotlin")
+    id("com.google.firebase.crashlytics")
+    id("com.google.gms.google-services")
+    id("kotlin-android")
+
 }

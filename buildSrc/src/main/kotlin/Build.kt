@@ -7,4 +7,9 @@ object Build {
     const val hiltAndroid = "com.google.dagger:hilt-android-gradle-plugin:${Hilt.hiltVersion}"
 
     const val navigationSafeArgsPlugin = "androidx.navigation:navigation-safe-args-gradle-plugin:${AndroidX.navigation_version}"
+
+    const val googleServicesPlugin = "com.google.gms:google-services:${Google.googleServicesPluginVersion}"
+
+    const val firebaseCrashlyicsPlugin = "com.google.firebase:firebase-crashlytics-gradle:${Google.firebaseCrashlyticsPluginVersion}"
+
 }

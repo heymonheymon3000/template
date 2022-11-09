@@ -15,6 +15,8 @@ buildscript {
         classpath (Build.kotlinGradlePlugin)
         classpath (Build.hiltAndroid)
         classpath (Build.navigationSafeArgsPlugin)
+        classpath (Build.googleServicesPlugin)
+        classpath (Build.firebaseCrashlyicsPlugin)
     }
 }
 

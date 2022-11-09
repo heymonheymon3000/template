@@ -8,12 +8,13 @@ object Google {
     private const val gsonVersion = "2.8.9"
     const val gson = "com.google.code.gson:gson:$gsonVersion"
 
-    private const val firebaseBomVersion = "29.3.1"
+    private const val firebaseBomVersion = "31.0.2"
     const val firebaseBom = "com.google.firebase:firebase-bom:$firebaseBomVersion"
     // no need to specify version when using the Bom above
     const val firebaseCrashlytics = "com.google.firebase:firebase-crashlytics-ktx"
+    const val analytics =  "com.google.firebase:firebase-analytics-ktx"
 
-    const val googleServicesPluginVersion = "4.3.10"
+    const val googleServicesPluginVersion = "4.3.14"
     const val firebaseCrashlyticsPluginVersion = "2.8.1"
 
     private const val text_recognitionVersion = "16.0.0-beta1"

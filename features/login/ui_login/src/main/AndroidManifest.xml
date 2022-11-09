@@ -6,7 +6,7 @@
         dist:title="@string/ui_login"
         dist:instant="false">
         <dist:delivery>
-            <dist:on-demand />
+            <dist:install-time />
         </dist:delivery>
         <dist:fusing dist:include="true" />
     </dist:module>
@@ -15,6 +15,7 @@
         <service
             android:name="com.gm.template.ui_login.plugin.PluginLogin"
             android:exported="true"
+            android:enabled="true"
             android:permission="com.gm.template.plugin_permission">
             <intent-filter>
                 <action

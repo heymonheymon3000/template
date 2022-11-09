@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel target="11" />
+    <bytecodeTargetLevel target="1.8">
+      <module name="Template.app" target="11" />
+      <module name="Template.app.components" target="11" />
+      <module name="Template.app.plugin" target="11" />
+      <module name="Template.buildSrc" target="11" />
+      <module name="Template.buildSrc.main" target="11" />
+      <module name="Template.buildSrc.test" target="11" />
+      <module name="Template.features.login.ui_login" target="11" />
+    </bytecodeTargetLevel>
   </component>
 </project>
