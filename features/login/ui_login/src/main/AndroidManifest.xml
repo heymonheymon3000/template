@@ -3,19 +3,20 @@
     xmlns:dist="http://schemas.android.com/apk/distribution">
 
     <dist:module
-        dist:title="@string/ui_login"
-        dist:instant="false">
+        dist:instant="false"
+        dist:title="@string/ui_login">
         <dist:delivery>
-            <dist:install-time />
+            <dist:on-demand />
         </dist:delivery>
+
         <dist:fusing dist:include="true" />
     </dist:module>
 
     <application>
         <service
-            android:name="com.gm.template.ui_login.plugin.PluginLogin"
-            android:exported="true"
+            android:name=".plugin.PluginLogin"
             android:enabled="true"
+            android:exported="true"
             android:permission="com.gm.template.plugin_permission">
             <intent-filter>
                 <action
@@ -28,8 +29,6 @@
                 android:name="com.gm.template.META_DATA_PLUGIN_NAME"
                 android:value="Login" />
         </service>
-
     </application>
-
 
 </manifest>

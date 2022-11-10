@@ -4,7 +4,7 @@ object Android {
     const val buildTools = "32.0.0"
     const val minSdk = 27
     const val targetSdk = 32
-    val versionCode: Int = ((System.getenv("TFS_BUILD_NUMBER")?.toInt() ?:  226))
+    val versionCode: Int = ((System.getenv("TFS_BUILD_NUMBER")?.toInt() ?:  253))
     const val versionName = "3.7"
 }
 

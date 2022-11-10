@@ -13,6 +13,7 @@ import com.gm.template.ui.MainActivityInterface
 import com.gm.template.ui.theme.TemplateTheme
 import com.gm.template.ui_login.di.DaggerLoginComponent
 import com.gm.template.ui_login.ui.LoginViewModel
+import com.google.android.play.core.splitcompat.SplitCompat
 import dagger.hilt.android.EntryPointAccessors
 import javax.inject.Inject
 
@@ -41,6 +42,8 @@ class LoginFragment: BaseFragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
+        SplitCompat.install(context)
+        SplitCompat.installActivity(context)
         DaggerLoginComponent
             .builder()
             .context(requireContext())
