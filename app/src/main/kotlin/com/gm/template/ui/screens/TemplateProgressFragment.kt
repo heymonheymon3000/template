@@ -1,9 +1,11 @@
 package com.gm.template.ui.screens
 
+import android.content.Context
 import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.navigation.dynamicfeatures.fragment.ui.AbstractProgressFragment
 import com.gm.template.R
+import com.google.android.play.core.splitcompat.SplitCompat
 
 class TemplateProgressFragment : AbstractProgressFragment(R.layout.fragment_progress) {
 
@@ -21,4 +23,5 @@ class TemplateProgressFragment : AbstractProgressFragment(R.layout.fragment_prog
         view?.findViewById<TextView>(R.id.progressBar)?.text =
             getString(R.string.installing_module_cancelled)
     }
+
 }

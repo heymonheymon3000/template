@@ -7,7 +7,6 @@ interface MainActivityInterface {
     fun loadFragment(pluginFragment: PluginFragment, addToBackStack: Boolean)
     fun loadFragmentByAction(pluginActionName: String,
                              addToBackStack: Boolean,
-                             arguments: HashMap<String, Any>,
-                             upDateColor: (() -> Unit)? = null)
+                             arguments: HashMap<String, Any>)
     fun findPluginByActionName(actionName: String): List<Plugin>
 }

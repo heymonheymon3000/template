@@ -35,11 +35,7 @@ fun StartScreen(
     ) {
         Text(
             text = "Hello Start up Fragment - ${BuildConfig.VERSION_CODE}",
-            color = if (state.isLoginFeatureAvailable) {
-                MaterialTheme.colors.onPrimary
-            } else {
-                Color(0xFF333333)
-            },
+            color = MaterialTheme.colors.onPrimary,
             fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(top = 20.dp)
@@ -53,11 +49,10 @@ fun StartScreen(
             onClick = {
                 scope.launch(Main) {
                     mainActivityInterface.loadFragmentByAction(
-                        "login",
+                        "ui_login",
                         false,
                         HashMap()
-                    ) { events(
-                        MainEvents.OnUpdateAvailableEvent(true)) }
+                    )
                 }
             }
         ) {

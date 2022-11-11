@@ -12,6 +12,7 @@ import com.gm.template.plugin.BaseFragment
 import com.gm.template.ui.MainActivityInterface
 import com.gm.template.ui.MainViewModel
 import com.gm.template.ui.theme.TemplateTheme
+import com.google.android.play.core.splitcompat.SplitCompat
 
 class StartFragment: BaseFragment() {
     private var mainActivityInterface: MainActivityInterface? = null
@@ -38,6 +39,7 @@ class StartFragment: BaseFragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
+        SplitCompat.installActivity(context)
         mainActivityInterface = context as MainActivityInterface
     }
 

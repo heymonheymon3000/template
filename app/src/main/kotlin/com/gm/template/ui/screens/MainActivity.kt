@@ -38,22 +38,44 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : BaseActivity(), MainActivityInterface {
-    private val mainViewModel: MainViewModel by viewModels()
     private lateinit var navController: NavController
     private lateinit var navHostFragment: NavHostFragment
+    private lateinit var splitInstallManager: SplitInstallManager
+
+    private val mainViewModel: MainViewModel by viewModels()
 
     private var _binding: ActivityMainBinding? = null
 
     // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
 
-    private val uiLogin by lazy { "ui_login" }
+    private var splitInstallStateUpdatedListener: SplitInstallStateUpdatedListener =
+        SplitInstallStateUpdatedListener { state ->
+            if(state.moduleNames().isNotEmpty()) {
+                val moduleName = state.moduleNames()[0]
+                when (state.status()) {
+                    SplitInstallSessionStatus.INSTALLED -> {
+                        SplitCompat.installActivity(this@MainActivity)
+                        launchFeature(moduleName)
+                    }
+                    SplitInstallSessionStatus.DOWNLOADING -> {}
+                    SplitInstallSessionStatus.REQUIRES_USER_CONFIRMATION -> {}
+                    SplitInstallSessionStatus.INSTALLING -> {}
+                    SplitInstallSessionStatus.FAILED -> {}
+                    SplitInstallSessionStatus.CANCELED -> {}
+                    SplitInstallSessionStatus.CANCELING -> {}
+                    SplitInstallSessionStatus.DOWNLOADED -> {}
+                    SplitInstallSessionStatus.PENDING -> {}
+                    SplitInstallSessionStatus.UNKNOWN -> {}
+                }
+            }
+        }
 
     private val mServiceConnection = object : ServiceConnection {
         var pluginInterface: IPluginInterface? = null
         var pluginFragment: PluginFragment? = null
 
-        override fun onServiceConnected(p0: ComponentName?, binder: IBinder?) {
+        override fun onServiceConnected(componentName: ComponentName?, binder: IBinder?) {
             pluginInterface = IPluginInterface.Stub.asInterface(binder)
             pluginInterface?.let {
                 try {
@@ -64,22 +86,26 @@ class MainActivity : BaseActivity(), MainActivityInterface {
                     pluginFragment?.let { plugin -> loadFragment(plugin, false) }
                 } catch (e: Exception) {
                     Log.i("E", "Something wrong")
-                }
-
-                if (mainViewModel.mIsBound) {
-                    mainViewModel.mIsBound = false
-                    applicationContext.unbindService(this)
+                } finally {
+                    if (mainViewModel.mIsBound) {
+                        mainViewModel.mIsBound = false
+                        applicationContext.unbindService(this)
+                    }
                 }
             }
         }
 
-        override fun onServiceDisconnected(p0: ComponentName?) {
+        override fun onServiceDisconnected(componentName: ComponentName?) {
             pluginInterface = null
+            mainViewModel.mIsBound = false
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        splitInstallManager =
+            SplitInstallManagerFactory.create(this)
 
         supportActionBar?.hide()
         WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -93,64 +119,38 @@ class MainActivity : BaseActivity(), MainActivityInterface {
         navController = navHostFragment.navController
     }
 
-    override fun loadFragmentByAction(
-        pluginActionName: String,
-        addToBackStack: Boolean,
-        arguments: HashMap<String, Any>,
-        upDateColor: (() -> Unit)?
-    ) {
-        val splitInstallManager: SplitInstallManager =
-            SplitInstallManagerFactory.create(applicationContext)
-
-        if (splitInstallManager.installedModules.contains(uiLogin)) {
-            bindToService(pluginActionName)
+    override fun loadFragmentByAction(pluginActionName: String, addToBackStack: Boolean, arguments: HashMap<String, Any> ) {
+        if (splitInstallManager.installedModules.contains(pluginActionName)) {
+            launchFeature(pluginActionName)
         } else {
-            val splitInstallStateUpdatedListener = SplitInstallStateUpdatedListener { state ->
-                when (state.status()) {
-                    SplitInstallSessionStatus.INSTALLED -> { onSuccessfulLoad(uiLogin, pluginActionName) }
-                    SplitInstallSessionStatus.DOWNLOADING -> {}
-                    SplitInstallSessionStatus.REQUIRES_USER_CONFIRMATION -> {}
-                    SplitInstallSessionStatus.INSTALLING -> {}
-                    SplitInstallSessionStatus.FAILED -> {}
-                    SplitInstallSessionStatus.CANCELED -> {}
-                    SplitInstallSessionStatus.CANCELING -> {}
-                    SplitInstallSessionStatus.DOWNLOADED -> {}
-                    SplitInstallSessionStatus.PENDING -> {}
-                    SplitInstallSessionStatus.UNKNOWN -> {}
-                }
-            }
-
-            splitInstallManager.registerListener(splitInstallStateUpdatedListener)
-
             val request = SplitInstallRequest.newBuilder()
-                .addModule(uiLogin)
+                .addModule(pluginActionName)
                 .build()
 
             splitInstallManager.startInstall(request)
-                .addOnCompleteListener {
-                    if (upDateColor != null) {
-                        upDateColor()
-                    }
-                }
-                .addOnSuccessListener {
-                    CoroutineScope(IO).launch {
-                        SplitCompat.install(this@MainActivity)
-                        SplitCompat.installActivity(this@MainActivity)
-                        //bindToService(pluginActionName)
-                        if (upDateColor != null) {
-                            upDateColor()
-                        }
-                        splitInstallManager.unregisterListener(splitInstallStateUpdatedListener)
-                    }
-                }
+                .addOnCompleteListener {}
+                .addOnSuccessListener {}
                 .addOnFailureListener {}
         }
+    }
+
+    override fun onResume() {
+        if(::splitInstallManager.isInitialized) {
+            splitInstallManager.registerListener(splitInstallStateUpdatedListener)
+        }
+        super.onResume()
+    }
+
+    override fun onPause() {
+        if(::splitInstallManager.isInitialized) {
+            splitInstallManager.unregisterListener(splitInstallStateUpdatedListener)
+        }
+        super.onPause()
     }
 
     override fun loadFragment(pluginFragment: PluginFragment, addToBackStack: Boolean) {
         CoroutineScope(Main).launch {
             if (pluginFragment.navGraphId != navController.currentDestination?.id) {
-                SplitCompat.installActivity(this@MainActivity as Context)
                 val navOptions = NavOptions.Builder().setLaunchSingleTop(true)
                     .setEnterAnim(R.anim.slide_in_from_right)
                     .setExitAnim(R.anim.slide_out_to_left)
@@ -171,124 +171,59 @@ class MainActivity : BaseActivity(), MainActivityInterface {
                             override fun onChanged(sessionState: SplitInstallSessionState) {
                                 when (sessionState.status()) {
                                     SplitInstallSessionStatus.INSTALLED -> {
-                                        SplitCompat.installActivity(this@MainActivity as Context)
+                                        CoroutineScope(Main).launch {
+                                            Toast.makeText(
+                                                this@MainActivity,
+                                                "Plugin INSTALLED DSDSDDSDS",
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        }
                                         navController.navigate(pluginFragment.navGraphId, null, navOptions)
                                     }
 
-                                    SplitInstallSessionStatus.REQUIRES_USER_CONFIRMATION -> {
-                                        CoroutineScope(Main).launch {
-                                            Toast.makeText(
-                                                this@MainActivity,
-                                                "SplitInstallSessionStatus.REQUIRES_USER_CONFIRMATION",
-                                                Toast.LENGTH_LONG
-                                            ).show()
-                                        }
-                                    }
-                                    SplitInstallSessionStatus.FAILED -> {
-                                        CoroutineScope(Main).launch {
-                                            Toast.makeText(
-                                                this@MainActivity,
-                                                "SplitInstallSessionStatus.FAILED",
-                                                Toast.LENGTH_LONG
-                                            ).show()
-                                        }
-                                    }
-                                    SplitInstallSessionStatus.CANCELED -> {
-                                        CoroutineScope(Main).launch {
-                                            Toast.makeText(
-                                                this@MainActivity,
-                                                "SplitInstallSessionStatus.CANCELED",
-                                                Toast.LENGTH_LONG
-                                            ).show()
-                                        }
-                                    }
-                                    SplitInstallSessionStatus.CANCELING -> {
-                                        CoroutineScope(Main).launch {
-                                            Toast.makeText(
-                                                this@MainActivity,
-                                                "SplitInstallSessionStatus.CANCELING",
-                                                Toast.LENGTH_LONG
-                                            ).show()
-                                        }
-                                    }
-                                    SplitInstallSessionStatus.DOWNLOADED -> {
-                                        CoroutineScope(Main).launch {
-                                            Toast.makeText(
-                                                this@MainActivity,
-                                                "SplitInstallSessionStatus.DOWNLOADED",
-                                                Toast.LENGTH_LONG
-                                            ).show()
-                                        }
-                                    }
-                                    SplitInstallSessionStatus.DOWNLOADING -> {
-                                        CoroutineScope(Main).launch {
-                                            Toast.makeText(
-                                                this@MainActivity,
-                                                "SplitInstallSessionStatus.DOWNLOADING",
-                                                Toast.LENGTH_LONG
-                                            ).show()
-                                        }
-                                    }
-                                    SplitInstallSessionStatus.INSTALLING -> {
-                                        CoroutineScope(Main).launch {
-                                            Toast.makeText(
-                                                this@MainActivity,
-                                                "SplitInstallSessionStatus.INSTALLING",
-                                                Toast.LENGTH_LONG
-                                            ).show()
-                                        }
-                                    }
-                                    SplitInstallSessionStatus.PENDING -> {
-                                        CoroutineScope(Main).launch {
-                                            Toast.makeText(
-                                                this@MainActivity,
-                                                "SplitInstallSessionStatus.PENDING",
-                                                Toast.LENGTH_LONG
-                                            ).show()
-                                        }
-                                    }
-                                    SplitInstallSessionStatus.UNKNOWN -> {
-                                        CoroutineScope(Main).launch {
-                                            Toast.makeText(
-                                                this@MainActivity,
-                                                "SplitInstallSessionStatus.UNKNOWN",
-                                                Toast.LENGTH_LONG
-                                            ).show()
-                                        }
-                                    }
+                                    SplitInstallSessionStatus.REQUIRES_USER_CONFIRMATION -> {}
+                                    SplitInstallSessionStatus.FAILED -> {}
+                                    SplitInstallSessionStatus.CANCELED -> {}
+                                    SplitInstallSessionStatus.CANCELING -> {}
+                                    SplitInstallSessionStatus.DOWNLOADED -> {}
+                                    SplitInstallSessionStatus.DOWNLOADING -> {}
+                                    SplitInstallSessionStatus.INSTALLING -> {}
+                                    SplitInstallSessionStatus.PENDING -> {}
+                                    SplitInstallSessionStatus.UNKNOWN -> {}
                                 }
 
                                 if (sessionState.hasTerminalStatus()) {
                                     installMonitor.status.removeObserver(this)
                                 }
                             }
-                        })
+                        }
+                    )
                 }
             }
         }
     }
 
     private fun launchFeature(pluginActionName: String) {
-        bindToService(pluginActionName)
-    }
-
-    private fun bindToService(pluginActionName: String) {
-        val plugins = findPluginByActionName(pluginActionName)
-        if (plugins.isNotEmpty()) {
-            SplitCompat.installActivity(this)
-            val plugin = plugins[0]
-            mainViewModel.actionName = pluginActionName
-            val bindIntent =
-                Intent().apply { setClassName(plugin.servicePackageName, plugin.serviceName) }
-            applicationContext.bindService(bindIntent, mServiceConnection, BIND_AUTO_CREATE)
-            mainViewModel.mIsBound = true
-        } else {
-            CoroutineScope(Main).launch {
-                Toast.makeText(
-                    this@MainActivity,
-                    "Plugin did not load",
-                    Toast.LENGTH_LONG
-                ).show()
+        CoroutineScope(IO).launch {
+            val plugins = findPluginByActionName(pluginActionName)
+            if (plugins.isNotEmpty()) {
+                SplitCompat.install(this@MainActivity)
+                SplitCompat.installActivity(this@MainActivity)
+                val plugin = plugins[0]
+                mainViewModel.actionName = pluginActionName
+                val bindIntent =
+                    Intent().apply { setClassName(plugin.servicePackageName, plugin.serviceName) }
+                if(applicationContext.bindService(bindIntent, mServiceConnection, BIND_AUTO_CREATE)) {
+                    mainViewModel.mIsBound = true
+                }
+            } else {
+                CoroutineScope(Main).launch {
+                    Toast.makeText(
+                        this@MainActivity,
+                        "Plugin did not load",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
             }
         }
     }
@@ -312,12 +247,6 @@ class MainActivity : BaseActivity(), MainActivityInterface {
         }
 
         return plugins
-    }
-
-    private fun onSuccessfulLoad(moduleName: String, pluginActionName: String) {
-        when (moduleName) {
-            uiLogin -> launchFeature(pluginActionName)
-        }
     }
 }
 

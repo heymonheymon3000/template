@@ -42,6 +42,9 @@ class LoginFragment: BaseFragment() {
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
+
+        SplitCompat.installActivity(context)
+
         DaggerLoginComponent
             .builder()
             .context(requireContext())

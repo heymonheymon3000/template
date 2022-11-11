@@ -20,21 +20,14 @@ class MainViewModel
 
     fun onTriggerEvent(event: MainEvents) {
         viewModelScope.launch {
-            try {
-                when (event) {
-                    is MainEvents.OnUpdateAvailableEvent -> {
-                        state.value = state.value.copy(
-                            isLoginFeatureAvailable = event.isAvailable)
-                    }
-
-                    else -> {
-
-                    }
-                }
-            } catch (e: Exception) {
-                //logger.error("FileReportViewModel", "launchJob: Exception: $e ${e.cause}")
-                e.printStackTrace()
-            }
+//            try {
+//                when (event) {
+//
+//                }
+//            } catch (e: Exception) {
+//                //logger.error("FileReportViewModel", "launchJob: Exception: $e ${e.cause}")
+//                e.printStackTrace()
+//            }
         }
     }
 }
