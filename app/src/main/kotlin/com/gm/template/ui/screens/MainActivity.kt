@@ -2,7 +2,6 @@ package com.gm.template.ui.screens
 
 import android.annotation.SuppressLint
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
@@ -41,16 +40,11 @@ class MainActivity : BaseActivity(), MainActivityInterface {
     private lateinit var navController: NavController
     private lateinit var navHostFragment: NavHostFragment
     private lateinit var splitInstallManager: SplitInstallManager
-
     private val mainViewModel: MainViewModel by viewModels()
-
     private var _binding: ActivityMainBinding? = null
-
-    // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
 
-    private var splitInstallStateUpdatedListener: SplitInstallStateUpdatedListener =
-        SplitInstallStateUpdatedListener { state ->
+    private var splitInstallStateUpdatedListener: SplitInstallStateUpdatedListener = SplitInstallStateUpdatedListener { state ->
             if(state.moduleNames().isNotEmpty()) {
                 val moduleName = state.moduleNames()[0]
                 when (state.status()) {
