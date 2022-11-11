@@ -16,12 +16,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gm.template.BuildConfig
 import com.gm.template.ui.MainActivityInterface
+import com.gm.template.ui.MainEvents
+import com.gm.template.ui.MainState
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
 
 @Composable
 fun StartScreen(
-    mainActivityInterface: MainActivityInterface)
+    mainActivityInterface: MainActivityInterface,
+    state: MainState,
+    events: (MainEvents) -> Unit)
 {
     val scope = rememberCoroutineScope()
 
@@ -31,7 +35,7 @@ fun StartScreen(
     ) {
         Text(
             text = "Hello Start up Fragment - ${BuildConfig.VERSION_CODE}",
-            color = if (isSystemInDarkTheme()) {
+            color = if (state.isLoginFeatureAvailable) {
                 MaterialTheme.colors.onPrimary
             } else {
                 Color(0xFF333333)
@@ -49,8 +53,11 @@ fun StartScreen(
             onClick = {
                 scope.launch(Main) {
                     mainActivityInterface.loadFragmentByAction(
-                        "login", false, HashMap()
-                    )
+                        "login",
+                        false,
+                        HashMap()
+                    ) { events(
+                        MainEvents.OnUpdateAvailableEvent(true)) }
                 }
             }
         ) {

@@ -42,5 +42,8 @@ dependencies {
     "kapt" (Hilt.hilt_compiler)
     "api" (Hilt.android)
     "kapt" (Hilt.compiler)
+
+    "api" (Google.play_core)
+
 }
 

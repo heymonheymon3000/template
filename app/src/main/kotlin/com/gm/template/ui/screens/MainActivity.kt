@@ -11,7 +11,6 @@ import android.os.IBinder
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
@@ -33,11 +32,12 @@ import com.google.android.play.core.splitinstall.*
 import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity(), MainActivityInterface {
+class MainActivity : BaseActivity(), MainActivityInterface {
     private val mainViewModel: MainViewModel by viewModels()
     private lateinit var navController: NavController
     private lateinit var navHostFragment: NavHostFragment
@@ -46,6 +46,37 @@ class MainActivity : AppCompatActivity(), MainActivityInterface {
 
     // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
+
+    private val uiLogin by lazy { "ui_login" }
+
+    private val mServiceConnection = object : ServiceConnection {
+        var pluginInterface: IPluginInterface? = null
+        var pluginFragment: PluginFragment? = null
+
+        override fun onServiceConnected(p0: ComponentName?, binder: IBinder?) {
+            pluginInterface = IPluginInterface.Stub.asInterface(binder)
+            pluginInterface?.let {
+                try {
+                    it.registerFragment("some fragment name")
+                    pluginFragment = PluginManager.getInstance(applicationContext)
+                            .getPluginFragmentByName(mainViewModel.actionName)
+                    pluginFragment?.argument = mainViewModel.mArguments
+                    pluginFragment?.let { plugin -> loadFragment(plugin, false) }
+                } catch (e: Exception) {
+                    Log.i("E", "Something wrong")
+                }
+
+                if (mainViewModel.mIsBound) {
+                    mainViewModel.mIsBound = false
+                    applicationContext.unbindService(this)
+                }
+            }
+        }
+
+        override fun onServiceDisconnected(p0: ComponentName?) {
+            pluginInterface = null
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,24 +93,64 @@ class MainActivity : AppCompatActivity(), MainActivityInterface {
         navController = navHostFragment.navController
     }
 
-    override fun attachBaseContext(newBase: Context) {
-        super.attachBaseContext(newBase)
-        SplitCompat.install(this)
-        SplitCompat.installActivity(this)
-    }
+    override fun loadFragmentByAction(
+        pluginActionName: String,
+        addToBackStack: Boolean,
+        arguments: HashMap<String, Any>,
+        upDateColor: (() -> Unit)?
+    ) {
+        val splitInstallManager: SplitInstallManager =
+            SplitInstallManagerFactory.create(applicationContext)
 
-    private fun launchFeature(pluginActionName: String) {
-        bindToService(pluginActionName)
-    }
+        if (splitInstallManager.installedModules.contains(uiLogin)) {
+            bindToService(pluginActionName)
+        } else {
+            val splitInstallStateUpdatedListener = SplitInstallStateUpdatedListener { state ->
+                when (state.status()) {
+                    SplitInstallSessionStatus.INSTALLED -> { onSuccessfulLoad(uiLogin, pluginActionName) }
+                    SplitInstallSessionStatus.DOWNLOADING -> {}
+                    SplitInstallSessionStatus.REQUIRES_USER_CONFIRMATION -> {}
+                    SplitInstallSessionStatus.INSTALLING -> {}
+                    SplitInstallSessionStatus.FAILED -> {}
+                    SplitInstallSessionStatus.CANCELED -> {}
+                    SplitInstallSessionStatus.CANCELING -> {}
+                    SplitInstallSessionStatus.DOWNLOADED -> {}
+                    SplitInstallSessionStatus.PENDING -> {}
+                    SplitInstallSessionStatus.UNKNOWN -> {}
+                }
+            }
 
-    private val uiLogin by lazy { "ui_login" }
+            splitInstallManager.registerListener(splitInstallStateUpdatedListener)
+
+            val request = SplitInstallRequest.newBuilder()
+                .addModule(uiLogin)
+                .build()
+
+            splitInstallManager.startInstall(request)
+                .addOnCompleteListener {
+                    if (upDateColor != null) {
+                        upDateColor()
+                    }
+                }
+                .addOnSuccessListener {
+                    CoroutineScope(IO).launch {
+                        SplitCompat.install(this@MainActivity)
+                        SplitCompat.installActivity(this@MainActivity)
+                        //bindToService(pluginActionName)
+                        if (upDateColor != null) {
+                            upDateColor()
+                        }
+                        splitInstallManager.unregisterListener(splitInstallStateUpdatedListener)
+                    }
+                }
+                .addOnFailureListener {}
+        }
+    }
 
     override fun loadFragment(pluginFragment: PluginFragment, addToBackStack: Boolean) {
-        SplitCompat.install(this)
-        SplitCompat.installActivity(this)
-
         CoroutineScope(Main).launch {
             if (pluginFragment.navGraphId != navController.currentDestination?.id) {
+                SplitCompat.installActivity(this@MainActivity as Context)
                 val navOptions = NavOptions.Builder().setLaunchSingleTop(true)
                     .setEnterAnim(R.anim.slide_in_from_right)
                     .setExitAnim(R.anim.slide_out_to_left)
@@ -91,8 +162,7 @@ class MainActivity : AppCompatActivity(), MainActivityInterface {
 
                 navController.navigate(
                     pluginFragment.navGraphId, null,
-                    navOptions, DynamicExtras(installMonitor)
-                )
+                    navOptions, DynamicExtras(installMonitor))
 
                 if (installMonitor.isInstallRequired) {
                     installMonitor.status.observe(
@@ -101,12 +171,8 @@ class MainActivity : AppCompatActivity(), MainActivityInterface {
                             override fun onChanged(sessionState: SplitInstallSessionState) {
                                 when (sessionState.status()) {
                                     SplitInstallSessionStatus.INSTALLED -> {
-                                        SplitCompat.install(this@MainActivity as Context)
                                         SplitCompat.installActivity(this@MainActivity as Context)
-
-                                        navController.navigate(
-                                            pluginFragment.navGraphId, null, navOptions
-                                        )
+                                        navController.navigate(pluginFragment.navGraphId, null, navOptions)
                                     }
 
                                     SplitInstallSessionStatus.REQUIRES_USER_CONFIRMATION -> {
@@ -202,63 +268,14 @@ class MainActivity : AppCompatActivity(), MainActivityInterface {
         }
     }
 
-//    override fun findPluginByActionName(actionName: String): List<Plugin> {
-//        TODO("Not yet implemented")
-//    }
-
-    override fun loadFragmentByAction(
-        pluginActionName: String,
-        addToBackStack: Boolean,
-        arguments: HashMap<String, Any>
-    ) {
-        val splitInstallStateUpdatedListener = SplitInstallStateUpdatedListener { state ->
-            when (state.status()) {
-                SplitInstallSessionStatus.INSTALLED -> {
-                    onSuccessfulLoad(uiLogin, pluginActionName)
-                }
-                SplitInstallSessionStatus.DOWNLOADING -> {}
-                SplitInstallSessionStatus.REQUIRES_USER_CONFIRMATION -> {}
-                SplitInstallSessionStatus.INSTALLING -> {}
-                SplitInstallSessionStatus.FAILED -> {}
-                SplitInstallSessionStatus.CANCELED -> {}
-                SplitInstallSessionStatus.CANCELING -> {}
-                SplitInstallSessionStatus.DOWNLOADED -> {}
-                SplitInstallSessionStatus.PENDING -> {}
-                SplitInstallSessionStatus.UNKNOWN -> {}
-            }
-        }
-
-        val splitInstallManager: SplitInstallManager =
-            SplitInstallManagerFactory.create(applicationContext)
-
-        if (splitInstallManager.installedModules.contains(uiLogin)) {
-            SplitCompat.install(this)
-            SplitCompat.installActivity(this)
-            bindToService(pluginActionName)
-        } else {
-            val request = SplitInstallRequest.newBuilder()
-                .addModule(uiLogin)
-                .build()
-
-            splitInstallManager.registerListener(splitInstallStateUpdatedListener)
-
-            splitInstallManager.startInstall(request)
-                .addOnCompleteListener {
-                    splitInstallManager.unregisterListener(splitInstallStateUpdatedListener)
-                }
-                .addOnSuccessListener {
-                    SplitCompat.install(this)
-                    SplitCompat.installActivity(this)
-
-                    //bindToService(pluginActionName)
-                }
-                .addOnFailureListener {}
-        }
+    private fun launchFeature(pluginActionName: String) {
+        bindToService(pluginActionName)
     }
 
     private fun bindToService(pluginActionName: String) {
         val plugins = findPluginByActionName(pluginActionName)
         if (plugins.isNotEmpty()) {
+            SplitCompat.installActivity(this)
             val plugin = plugins[0]
             mainViewModel.actionName = pluginActionName
             val bindIntent =
@@ -275,7 +292,6 @@ class MainActivity : AppCompatActivity(), MainActivityInterface {
             }
         }
     }
-
 
     @SuppressLint("QueryPermissionsNeeded")
     override fun findPluginByActionName(actionName: String): List<Plugin> {
@@ -298,42 +314,11 @@ class MainActivity : AppCompatActivity(), MainActivityInterface {
         return plugins
     }
 
-
     private fun onSuccessfulLoad(moduleName: String, pluginActionName: String) {
         when (moduleName) {
             uiLogin -> launchFeature(pluginActionName)
         }
     }
-
-    private val mServiceConnection = object : ServiceConnection {
-        var pluginInterface: IPluginInterface? = null
-        override fun onServiceConnected(p0: ComponentName?, binder: IBinder?) {
-            pluginInterface = IPluginInterface.Stub.asInterface(binder)
-            pluginInterface?.let {
-                try {
-                    it.registerFragment("some fragment name")
-                    val pluginFragment: PluginFragment? =
-                        PluginManager.getInstance(applicationContext)
-                            .getPluginFragmentByName(mainViewModel.actionName)
-                    pluginFragment?.argument = mainViewModel.mArguments
-                    pluginFragment?.let { plugin -> loadFragment(plugin, false) }
-                } catch (e: Exception) {
-                    Log.i("E", "Something wrong")
-                }
-
-                if (mainViewModel.mIsBound) {
-                    mainViewModel.mIsBound = false
-                    applicationContext.unbindService(this)
-                }
-            }
-        }
-
-        override fun onServiceDisconnected(p0: ComponentName?) {
-            pluginInterface = null
-        }
-    }
-
-
 }
 
 

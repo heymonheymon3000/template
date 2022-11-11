@@ -61,5 +61,7 @@ dependencies{
 
     implementation Hilt.android
     kapt Hilt.compiler
+    api (Google.play_core)
+
 }
 

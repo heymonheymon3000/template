@@ -97,8 +97,6 @@ dependencies {
     api (Hilt.android)
     kapt (Hilt.compiler)
 
-    api (Google.play_core)
-
     // Import the BoM for the Firebase platform
     api (platform(Google.firebaseBom))
     api (Google.firebaseCrashlytics)
