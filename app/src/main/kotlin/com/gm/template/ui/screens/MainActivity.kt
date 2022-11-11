@@ -1,10 +1,8 @@
 package com.gm.template.ui.screens
 
-import android.annotation.SuppressLint
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
@@ -21,7 +19,6 @@ import androidx.navigation.fragment.NavHostFragment
 import com.gm.template.R
 import com.gm.template.databinding.ActivityMainBinding
 import com.gm.template.plugin.IPluginInterface
-import com.gm.template.plugin.Plugin
 import com.gm.template.plugin.PluginFragment
 import com.gm.template.plugin.PluginManager
 import com.gm.template.ui.MainActivityInterface
@@ -65,7 +62,7 @@ class MainActivity : BaseActivity(), MainActivityInterface {
             }
         }
 
-    private val mServiceConnection = object : ServiceConnection {
+    private val serviceConnection = object : ServiceConnection {
         var pluginInterface: IPluginInterface? = null
         var pluginFragment: PluginFragment? = null
 
@@ -75,14 +72,17 @@ class MainActivity : BaseActivity(), MainActivityInterface {
                 try {
                     it.registerFragment("some fragment name")
                     pluginFragment = PluginManager.getInstance(applicationContext)
-                            .getPluginFragmentByName(mainViewModel.actionName)
-                    pluginFragment?.argument = mainViewModel.mArguments
-                    pluginFragment?.let { plugin -> loadFragment(plugin, false) }
+                            .getPluginFragmentByName(mainViewModel.state.value.actionName)
+                    pluginFragment?.let { plugin ->
+                        plugin.argument = mainViewModel.state.value.arguments
+                        loadFragment(plugin, mainViewModel.state.value.addToBackStack)
+                    }
                 } catch (e: Exception) {
                     Log.i("E", "Something wrong")
                 } finally {
-                    if (mainViewModel.mIsBound) {
-                        mainViewModel.mIsBound = false
+                    if (mainViewModel.state.value.mIsBound) {
+                        mainViewModel.state.value =
+                            mainViewModel.state.value.copy(mIsBound = false)
                         applicationContext.unbindService(this)
                     }
                 }
@@ -91,12 +91,15 @@ class MainActivity : BaseActivity(), MainActivityInterface {
 
         override fun onServiceDisconnected(componentName: ComponentName?) {
             pluginInterface = null
-            mainViewModel.mIsBound = false
+            mainViewModel.state.value =
+                mainViewModel.state.value.copy(mIsBound = false)
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        mainViewModel.mainActivityInterface = this
 
         splitInstallManager =
             SplitInstallManagerFactory.create(this)
@@ -113,6 +116,25 @@ class MainActivity : BaseActivity(), MainActivityInterface {
         navController = navHostFragment.navController
     }
 
+    override fun onResume() {
+        if(::splitInstallManager.isInitialized) {
+            splitInstallManager.registerListener(splitInstallStateUpdatedListener)
+        }
+        super.onResume()
+    }
+
+    override fun onPause() {
+        if(::splitInstallManager.isInitialized) {
+            splitInstallManager.unregisterListener(splitInstallStateUpdatedListener)
+        }
+        super.onPause()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mainViewModel.mainActivityInterface = null
+    }
+
     override fun loadFragmentByAction(pluginActionName: String, addToBackStack: Boolean, arguments: HashMap<String, Any> ) {
         if (splitInstallManager.installedModules.contains(pluginActionName)) {
             launchFeature(pluginActionName)
@@ -126,20 +148,6 @@ class MainActivity : BaseActivity(), MainActivityInterface {
                 .addOnSuccessListener {}
                 .addOnFailureListener {}
         }
-    }
-
-    override fun onResume() {
-        if(::splitInstallManager.isInitialized) {
-            splitInstallManager.registerListener(splitInstallStateUpdatedListener)
-        }
-        super.onResume()
-    }
-
-    override fun onPause() {
-        if(::splitInstallManager.isInitialized) {
-            splitInstallManager.unregisterListener(splitInstallStateUpdatedListener)
-        }
-        super.onPause()
     }
 
     override fun loadFragment(pluginFragment: PluginFragment, addToBackStack: Boolean) {
@@ -165,14 +173,8 @@ class MainActivity : BaseActivity(), MainActivityInterface {
                             override fun onChanged(sessionState: SplitInstallSessionState) {
                                 when (sessionState.status()) {
                                     SplitInstallSessionStatus.INSTALLED -> {
-                                        CoroutineScope(Main).launch {
-                                            Toast.makeText(
-                                                this@MainActivity,
-                                                "Plugin INSTALLED DSDSDDSDS",
-                                                Toast.LENGTH_LONG
-                                            ).show()
-                                        }
-                                        navController.navigate(pluginFragment.navGraphId, null, navOptions)
+                                        val bundle = null  // set this up
+                                        navController.navigate(pluginFragment.navGraphId, bundle, navOptions)
                                     }
 
                                     SplitInstallSessionStatus.REQUIRES_USER_CONFIRMATION -> {}
@@ -197,18 +199,19 @@ class MainActivity : BaseActivity(), MainActivityInterface {
         }
     }
 
-    private fun launchFeature(pluginActionName: String) {
+    override fun launchFeature(pluginActionName: String) {
         CoroutineScope(IO).launch {
-            val plugins = findPluginByActionName(pluginActionName)
+            val plugins = mainViewModel.findPluginByActionName(pluginActionName)
             if (plugins.isNotEmpty()) {
-                SplitCompat.install(this@MainActivity)
                 SplitCompat.installActivity(this@MainActivity)
                 val plugin = plugins[0]
-                mainViewModel.actionName = pluginActionName
+                mainViewModel.state.value =
+                    mainViewModel.state.value.copy(actionName = pluginActionName)
                 val bindIntent =
                     Intent().apply { setClassName(plugin.servicePackageName, plugin.serviceName) }
-                if(applicationContext.bindService(bindIntent, mServiceConnection, BIND_AUTO_CREATE)) {
-                    mainViewModel.mIsBound = true
+                if(applicationContext.bindService(bindIntent, serviceConnection, BIND_AUTO_CREATE)) {
+                    mainViewModel.state.value =
+                        mainViewModel.state.value.copy(mIsBound = true)
                 }
             } else {
                 CoroutineScope(Main).launch {
@@ -220,27 +223,6 @@ class MainActivity : BaseActivity(), MainActivityInterface {
                 }
             }
         }
-    }
-
-    @SuppressLint("QueryPermissionsNeeded")
-    override fun findPluginByActionName(actionName: String): List<Plugin> {
-        val resolveInfoList = packageManager.queryIntentServices(
-            Intent(actionName),
-            PackageManager.GET_META_DATA
-        )
-        val plugins: MutableList<Plugin> = ArrayList()
-        if (resolveInfoList.size == 0) {
-            return plugins
-        }
-
-        for (resolveInfo in resolveInfoList) {
-            if (packageName.equals(resolveInfo.serviceInfo.processName, ignoreCase = true)) {
-                val plugin = Plugin(resolveInfo)
-                plugins.add(plugin)
-            }
-        }
-
-        return plugins
     }
 }
 

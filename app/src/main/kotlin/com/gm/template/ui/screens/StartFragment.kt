@@ -30,7 +30,6 @@ class StartFragment: BaseFragment() {
             setContent {
                 TemplateTheme { mainActivityInterface?.let {
                     StartScreen(
-                        mainActivityInterface = it,
                         state = viewModel.state.value,
                         events = viewModel::onTriggerEvent) } }
             }
