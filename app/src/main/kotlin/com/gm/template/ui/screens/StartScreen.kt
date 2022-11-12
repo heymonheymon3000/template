@@ -37,9 +37,7 @@ fun StartScreen(
             modifier = Modifier.width(240.dp).height(44.dp),
             onClick = {
                 events(MainEvents.OnLoadFragmentByActionEvent(
-                    pluginActionName = state.pluginActionName,
-                    addToBackStack = state.addToBackStack,
-                    arguments = state.arguments))
+                    pluginActionName = state.pluginActionName))
             }
         ) {
             Text(

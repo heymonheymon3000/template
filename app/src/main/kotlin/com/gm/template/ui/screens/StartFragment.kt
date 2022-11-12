@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.findNavController
 import com.gm.template.plugin.BaseFragment
 import com.gm.template.ui.MainActivityInterface
 import com.gm.template.ui.MainViewModel
