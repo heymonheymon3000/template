@@ -4,7 +4,7 @@
     android:id="@+id/nav_graph"
     android:label="nav_graph"
     app:startDestination="@id/start_fragment"
-    app:progressDestination="@+id/templateProgressFragment">
+    app:progressDestination="@id/templateProgressFragment">
 
     <fragment
         android:id="@+id/start_fragment"
@@ -20,7 +20,7 @@
         android:label="login_nav_graph"
         app:graphResName="login_nav_graph"
         app:graphPackage="com.gm.template2.ui_login"
-        app:moduleName="ui_login">
+        app:moduleName="@string/module_login">
     </include-dynamic>
 
     <fragment

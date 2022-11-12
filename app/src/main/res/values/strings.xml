@@ -1,7 +1,4 @@
 <resources>
-    <string name="ui_login">ui_login</string>
-
-
     <string name="app_name">My Application</string>
     <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
@@ -17,5 +14,10 @@
     <string name="installing_module_cancelled">Installing module cancelled</string>
     <string name="installing_notes_module">Installing notes module …</string>
     <string name="module_icon">Module icon</string>
+
+
+
+    <string name="module_login">ui_login</string>
+
 
 </resources>

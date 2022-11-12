@@ -4,7 +4,7 @@
 
     <dist:module
         dist:instant="false"
-        dist:title="@string/ui_login">
+        dist:title="@string/module_login">
         <dist:delivery>
             <dist:on-demand />
         </dist:delivery>
@@ -27,7 +27,7 @@
 
             <meta-data
                 android:name="com.gm.template.META_DATA_PLUGIN_NAME"
-                android:value="Login" />
+                android:value="@string/module_login" />
         </service>
     </application>
 

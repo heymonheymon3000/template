@@ -14,7 +14,7 @@ class PluginLogin: PluginService() {
 
         PluginManager.getInstance(applicationContext)
             .registerPluginFragmentByName(
-                name  = "ui_login",
+                name  = resources.getString(com.gm.template.R.string.module_login),
                 pluginFragment = loginFragment)
     }
 }
