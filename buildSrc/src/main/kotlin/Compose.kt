@@ -1,7 +1,7 @@
 object Compose {
     const val kotlinCompilerExtensionVersion = "1.3.0"
 
-    private const val activityComposeVersion = "1.4.0"
+    private const val activityComposeVersion = "1.6.1"
     const val activity = "androidx.activity:activity-ktx:$activityComposeVersion"
 
     const val composeVersion = "1.2.1"
@@ -14,7 +14,7 @@ object Compose {
     const val runTime = "androidx.compose.runtime:runtime:$composeVersion"
     const val liveData = "androidx.compose.runtime:runtime-livedata:$composeVersion"
 
-    private const val navigationVersion = "2.4.1"
+    private const val navigationVersion = "2.5.3"
     const val navigation = "androidx.navigation:navigation-compose:$navigationVersion"
 
     private const val constraintLayoutComposeVersion = "1.0.0"

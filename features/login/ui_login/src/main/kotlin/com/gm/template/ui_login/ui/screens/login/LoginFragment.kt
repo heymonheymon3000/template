@@ -34,8 +34,8 @@ class LoginFragment: BaseFragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 TemplateTheme {
-                    LoginScreen()
-                }
+                    LoginScreen(state = viewModel.state.value,
+                        events = viewModel::onTriggerEvent) }
             }
         }
     }

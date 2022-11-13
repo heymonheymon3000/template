@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 fun CircularIndeterminateProgressBar() {
     Row(
         modifier = Modifier.fillMaxSize(),
-        horizontalArrangement = Arrangement.Center,
+        horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ){
         CircularProgressIndicator(

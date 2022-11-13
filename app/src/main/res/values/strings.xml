@@ -18,6 +18,7 @@
 
 
     <string name="module_login">ui_login</string>
+    <string name="loading">Loading</string>
 
 
 </resources>

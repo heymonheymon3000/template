@@ -45,5 +45,10 @@ dependencies {
 
     "api" (Google.play_core)
 
+    "api" (Accompanist.accompanistSystemuicontroller)
+    "api" (Accompanist.animations)
+    "api" (Accompanist.permissions)
+    "api" (Accompanist.flowLayout)
+
 }
 

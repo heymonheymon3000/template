@@ -1,7 +1,6 @@
 package com.gm.template.ui.screens
 
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.Lifecycle
@@ -50,10 +49,12 @@ class MainActivity : BaseActivity(), MainActivityInterface {
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as DynamicNavHostFragment
         navController = navHostFragment.navController
 
-        collectEvents()
+        mainViewModel.navController = navController
+
+        processCollectedEvents()
     }
 
-    private fun collectEvents() {
+    private fun processCollectedEvents() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
@@ -62,7 +63,7 @@ class MainActivity : BaseActivity(), MainActivityInterface {
                             when (mainEvent) {
                                 is MainEvents.OnLoadFeatureEvent -> {
                                     SplitCompat.installActivity(this@MainActivity)
-                                    loadFeature(mainEvent.pluginFragment)
+                                    loadFeature(mainEvent.pluginFragment )
                                 }
 
                                 else -> {}
@@ -77,12 +78,22 @@ class MainActivity : BaseActivity(), MainActivityInterface {
     private fun loadFeature(pluginFragment: PluginFragment) {
         CoroutineScope(Main).launch {
             if (pluginFragment.navGraphId != navController.currentDestination?.id) {
-                val navOptions = NavOptions.Builder().setLaunchSingleTop(true)
-                    .setEnterAnim(R.anim.slide_in_from_right)
-                    .setExitAnim(R.anim.slide_out_to_left)
-                    .setPopEnterAnim(R.anim.slide_in_from_left)
-                    .setPopExitAnim(R.anim.slide_out_to_right)
-                    .build()
+                val navOptions = if(navController.currentDestination?.id != R.id.feature_progress_bar_fragment) {
+                    NavOptions.Builder().setLaunchSingleTop(true)
+                        .setEnterAnim(R.anim.slide_in_from_right)
+                        .setExitAnim(R.anim.slide_out_to_left)
+                        .setPopEnterAnim(R.anim.slide_in_from_left)
+                        .setPopExitAnim(R.anim.slide_out_to_right)
+                        .build()
+                } else {
+                    navController.popBackStack()
+                    NavOptions.Builder().setLaunchSingleTop(true)
+                        .setEnterAnim(R.anim.fadein)
+                        .setExitAnim(R.anim.fadeout)
+                        .setPopEnterAnim(R.anim.fadein)
+                        .setPopExitAnim(R.anim.fadeout)
+                        .build()
+                }
 
                 val installMonitor = DynamicInstallMonitor()
 
