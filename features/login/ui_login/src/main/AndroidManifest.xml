@@ -15,23 +15,6 @@
         <meta-data
             android:name="ui_login"
             android:value="com.gm.template.ui_login.plugin.LoginPluginInterfaceImpl" />
-
-        <service
-            android:name=".plugin.PluginLogin"
-            android:enabled="true"
-            android:exported="true"
-            android:permission="com.gm.template.plugin_permission">
-            <intent-filter>
-                <action
-                    android:name="com.gm.template.LOGIN_PLUGIN"
-                    android:screenOrientation="portrait" />
-                <action android:name="ui_login" />
-            </intent-filter>
-
-            <meta-data
-                android:name="com.gm.template.META_DATA_PLUGIN_NAME"
-                android:value="@string/module_login" />
-        </service>
     </application>
 
 </manifest>

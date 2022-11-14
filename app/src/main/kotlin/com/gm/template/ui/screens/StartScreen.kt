@@ -50,7 +50,7 @@ fun StartScreen(
                     backgroundColor = Color(0xFF1E56A0)),
                     modifier = Modifier.width(240.dp).height(44.dp),
                     onClick = {
-                        events(MainEvents.OnLoadFragmentByActionEvent(
+                        events(MainEvents.OnLoadFeatureByActionEvent(
                             pluginActionName = state.pluginActionName))
                     }
                 ) {

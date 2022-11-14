@@ -58,11 +58,6 @@ class MainActivity : BaseActivity(), MainActivityInterface {
                     mainViewModel.triggerMainEvent.collect { event ->
                         event.getContentIfNotHandled()?.let { mainEvent ->
                             when (mainEvent) {
-//                                is MainEvents.OnLoadFeatureEvent -> {
-//                                    SplitCompat.installActivity(this@MainActivity)
-//                                    loadFeature(mainEvent.pluginFragment )
-//                                }
-
                                 is MainEvents.OnLoadFeatureNavGraphEvent -> {
                                     SplitCompat.installActivity(this@MainActivity)
                                     loadFeature(mainEvent.navGraphId )
@@ -134,61 +129,3 @@ class MainActivity : BaseActivity(), MainActivityInterface {
         }
     }
 }
-
-
-//    private fun loadFeature(pluginFragment: PluginFragment) {
-//        if (pluginFragment.navGraphId != navController.currentDestination?.id) {
-//            val navOptions = if(navController.currentDestination?.id != R.id.feature_progress_bar_fragment) {
-//                NavOptions.Builder().setLaunchSingleTop(true)
-//                    .setEnterAnim(R.anim.slide_in_from_right)
-//                    .setExitAnim(R.anim.slide_out_to_left)
-//                    .setPopEnterAnim(R.anim.slide_in_from_left)
-//                    .setPopExitAnim(R.anim.slide_out_to_right)
-//                    .build()
-//            } else {
-//                navController.popBackStack()
-//                NavOptions.Builder().setLaunchSingleTop(true)
-//                    .setEnterAnim(R.anim.fadein)
-//                    .setExitAnim(R.anim.fadeout)
-//                    .setPopEnterAnim(R.anim.fadein)
-//                    .setPopExitAnim(R.anim.fadeout)
-//                    .build()
-//            }
-//
-//            val installMonitor = DynamicInstallMonitor()
-//
-//            navController.navigate(
-//                pluginFragment.navGraphId, null,
-//                navOptions, DynamicExtras(installMonitor))
-//
-//            if (installMonitor.isInstallRequired) {
-//                installMonitor.status.observe(
-//                    this@MainActivity,
-//                    object : Observer<SplitInstallSessionState> {
-//                        override fun onChanged(sessionState: SplitInstallSessionState) {
-//                            when (sessionState.status()) {
-//                                SplitInstallSessionStatus.INSTALLED -> {
-//                                    val bundle = null  // set this up
-//                                    navController.navigate(pluginFragment.navGraphId, bundle, navOptions)
-//                                }
-//
-//                                SplitInstallSessionStatus.REQUIRES_USER_CONFIRMATION -> {}
-//                                SplitInstallSessionStatus.FAILED -> {}
-//                                SplitInstallSessionStatus.CANCELED -> {}
-//                                SplitInstallSessionStatus.CANCELING -> {}
-//                                SplitInstallSessionStatus.DOWNLOADED -> {}
-//                                SplitInstallSessionStatus.DOWNLOADING -> {}
-//                                SplitInstallSessionStatus.INSTALLING -> {}
-//                                SplitInstallSessionStatus.PENDING -> {}
-//                                SplitInstallSessionStatus.UNKNOWN -> {}
-//                            }
-//
-//                            if (sessionState.hasTerminalStatus()) {
-//                                installMonitor.status.removeObserver(this)
-//                            }
-//                        }
-//                    }
-//                )
-//            }
-//        }
-//    }
