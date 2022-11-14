@@ -51,10 +51,10 @@ class MainActivity : BaseActivity(), MainActivityInterface {
 
         mainViewModel.navController = navController
 
-        processCollectedEvents()
+        processEvents()
     }
 
-    private fun processCollectedEvents() {
+    private fun processEvents() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
@@ -76,60 +76,58 @@ class MainActivity : BaseActivity(), MainActivityInterface {
     }
 
     private fun loadFeature(pluginFragment: PluginFragment) {
-        CoroutineScope(Main).launch {
-            if (pluginFragment.navGraphId != navController.currentDestination?.id) {
-                val navOptions = if(navController.currentDestination?.id != R.id.feature_progress_bar_fragment) {
-                    NavOptions.Builder().setLaunchSingleTop(true)
-                        .setEnterAnim(R.anim.slide_in_from_right)
-                        .setExitAnim(R.anim.slide_out_to_left)
-                        .setPopEnterAnim(R.anim.slide_in_from_left)
-                        .setPopExitAnim(R.anim.slide_out_to_right)
-                        .build()
-                } else {
-                    navController.popBackStack()
-                    NavOptions.Builder().setLaunchSingleTop(true)
-                        .setEnterAnim(R.anim.fadein)
-                        .setExitAnim(R.anim.fadeout)
-                        .setPopEnterAnim(R.anim.fadein)
-                        .setPopExitAnim(R.anim.fadeout)
-                        .build()
-                }
+        if (pluginFragment.navGraphId != navController.currentDestination?.id) {
+            val navOptions = if(navController.currentDestination?.id != R.id.feature_progress_bar_fragment) {
+                NavOptions.Builder().setLaunchSingleTop(true)
+                    .setEnterAnim(R.anim.slide_in_from_right)
+                    .setExitAnim(R.anim.slide_out_to_left)
+                    .setPopEnterAnim(R.anim.slide_in_from_left)
+                    .setPopExitAnim(R.anim.slide_out_to_right)
+                    .build()
+            } else {
+                navController.popBackStack()
+                NavOptions.Builder().setLaunchSingleTop(true)
+                    .setEnterAnim(R.anim.fadein)
+                    .setExitAnim(R.anim.fadeout)
+                    .setPopEnterAnim(R.anim.fadein)
+                    .setPopExitAnim(R.anim.fadeout)
+                    .build()
+            }
 
-                val installMonitor = DynamicInstallMonitor()
+            val installMonitor = DynamicInstallMonitor()
 
-                navController.navigate(
-                    pluginFragment.navGraphId, null,
-                    navOptions, DynamicExtras(installMonitor))
+            navController.navigate(
+                pluginFragment.navGraphId, null,
+                navOptions, DynamicExtras(installMonitor))
 
-                if (installMonitor.isInstallRequired) {
-                    installMonitor.status.observe(
-                        this@MainActivity,
-                        object : Observer<SplitInstallSessionState> {
-                            override fun onChanged(sessionState: SplitInstallSessionState) {
-                                when (sessionState.status()) {
-                                    SplitInstallSessionStatus.INSTALLED -> {
-                                        val bundle = null  // set this up
-                                        navController.navigate(pluginFragment.navGraphId, bundle, navOptions)
-                                    }
-
-                                    SplitInstallSessionStatus.REQUIRES_USER_CONFIRMATION -> {}
-                                    SplitInstallSessionStatus.FAILED -> {}
-                                    SplitInstallSessionStatus.CANCELED -> {}
-                                    SplitInstallSessionStatus.CANCELING -> {}
-                                    SplitInstallSessionStatus.DOWNLOADED -> {}
-                                    SplitInstallSessionStatus.DOWNLOADING -> {}
-                                    SplitInstallSessionStatus.INSTALLING -> {}
-                                    SplitInstallSessionStatus.PENDING -> {}
-                                    SplitInstallSessionStatus.UNKNOWN -> {}
+            if (installMonitor.isInstallRequired) {
+                installMonitor.status.observe(
+                    this@MainActivity,
+                    object : Observer<SplitInstallSessionState> {
+                        override fun onChanged(sessionState: SplitInstallSessionState) {
+                            when (sessionState.status()) {
+                                SplitInstallSessionStatus.INSTALLED -> {
+                                    val bundle = null  // set this up
+                                    navController.navigate(pluginFragment.navGraphId, bundle, navOptions)
                                 }
 
-                                if (sessionState.hasTerminalStatus()) {
-                                    installMonitor.status.removeObserver(this)
-                                }
+                                SplitInstallSessionStatus.REQUIRES_USER_CONFIRMATION -> {}
+                                SplitInstallSessionStatus.FAILED -> {}
+                                SplitInstallSessionStatus.CANCELED -> {}
+                                SplitInstallSessionStatus.CANCELING -> {}
+                                SplitInstallSessionStatus.DOWNLOADED -> {}
+                                SplitInstallSessionStatus.DOWNLOADING -> {}
+                                SplitInstallSessionStatus.INSTALLING -> {}
+                                SplitInstallSessionStatus.PENDING -> {}
+                                SplitInstallSessionStatus.UNKNOWN -> {}
+                            }
+
+                            if (sessionState.hasTerminalStatus()) {
+                                installMonitor.status.removeObserver(this)
                             }
                         }
-                    )
-                }
+                    }
+                )
             }
         }
     }

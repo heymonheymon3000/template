@@ -13,6 +13,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.navigation.dynamicfeatures.fragment.ui.AbstractProgressFragment
 import com.gm.template.core.domain.ProgressBarState
 import com.gm.template.core.domain.Queue
 import com.gm.template.core.domain.UIComponent

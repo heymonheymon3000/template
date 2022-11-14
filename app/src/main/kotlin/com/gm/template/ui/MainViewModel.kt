@@ -50,7 +50,8 @@ class MainViewModel
 
     val state: MutableState<MainState> = mutableStateOf(MainState())
 
-    private val _triggerMainEvent: MutableStateFlow<Event<MainEvents?>> = MutableStateFlow(Event(null))
+    private val _triggerMainEvent: MutableStateFlow<Event<MainEvents?>> =
+        MutableStateFlow(Event(null))
     val triggerMainEvent: StateFlow<Event<MainEvents?>> get() = _triggerMainEvent
 
     private val serviceConnection = object : ServiceConnection {
@@ -86,74 +87,95 @@ class MainViewModel
     }
 
     private var listener: SplitInstallStateUpdatedListener = SplitInstallStateUpdatedListener { state ->
-            if (state.sessionId() == sessionId) {
-                if(state.moduleNames().isNotEmpty()) {
-                    val moduleName = state.moduleNames()[0]
-                    when (state.status()) {
-                        SplitInstallSessionStatus.INSTALLED -> {
-                            this@MainViewModel.state.value = this@MainViewModel.state.value.copy(
-                                featureProgressBarStateText = "Installed $moduleName")
-
-                            launchFeature(moduleName)
+        if (state.sessionId() == sessionId) {
+            if(state.moduleNames().isNotEmpty()) {
+                val moduleName = state.moduleNames()[0]
+                when (state.status()) {
+                    SplitInstallSessionStatus.INSTALLED -> {
+                        CoroutineScope(Main).launch {
+                            this@MainViewModel.state.value =
+                                this@MainViewModel.state.value.copy(
+                                    featureProgressBarStateText = "INSTALLED $moduleName")
                         }
 
-                        SplitInstallSessionStatus.DOWNLOADING -> {
-//                                val progress =
-//                                    (((state.bytesDownloaded().toDouble() * 100 / state.totalBytesToDownload()).toFloat())/100).toFloat()
+                        launchFeature(moduleName)
+                    }
 
-                                this@MainViewModel.state.value = this@MainViewModel.state.value.copy(
-                                    featureProgressBarStateText = "Downloading $moduleName")
+                    SplitInstallSessionStatus.DOWNLOADING -> {
+                        CoroutineScope(Main).launch {
+                            this@MainViewModel.state.value =
+                                this@MainViewModel.state.value.copy(
+                                    featureProgressBarStateText = "DOWNLOADING $moduleName")
                         }
+                    }
 
-                        SplitInstallSessionStatus.REQUIRES_USER_CONFIRMATION -> {
-
+                    SplitInstallSessionStatus.REQUIRES_USER_CONFIRMATION -> {
+                        CoroutineScope(Main).launch {
+                            this@MainViewModel.state.value =
+                                this@MainViewModel.state.value.copy(
+                                    featureProgressBarStateText = "REQUIRES_USER_CONFIRMATION $moduleName")
                         }
+                    }
 
-                        SplitInstallSessionStatus.INSTALLING -> {
+                    SplitInstallSessionStatus.INSTALLING -> {
+                        CoroutineScope(Main).launch {
                             this@MainViewModel.state.value =
                                 this@MainViewModel.state.value.copy(
                                     featureProgressBarStateText = "INSTALLING $moduleName")
                         }
+                    }
 
-                        SplitInstallSessionStatus.FAILED -> {
+                    SplitInstallSessionStatus.FAILED -> {
+                        CoroutineScope(Main).launch {
                             this@MainViewModel.state.value =
                                 this@MainViewModel.state.value.copy(
                                     featureProgressBarStateText = "FAILED $moduleName")
-                            //navController.popBackStack()
                         }
+                    }
 
-                        SplitInstallSessionStatus.CANCELED -> {
+                    SplitInstallSessionStatus.CANCELED -> {
+                        CoroutineScope(Main).launch {
                             this@MainViewModel.state.value =
                                 this@MainViewModel.state.value.copy(
                                     featureProgressBarStateText = "CANCELED $moduleName")
-                            //navController.popBackStack()
                         }
+                    }
 
-                        SplitInstallSessionStatus.CANCELING -> {
+                    SplitInstallSessionStatus.CANCELING -> {
+                        CoroutineScope(Main).launch {
                             this@MainViewModel.state.value =
                                 this@MainViewModel.state.value.copy(
                                     featureProgressBarStateText = "CANCELING $moduleName")
-                            //navController.popBackStack()
                         }
+                    }
 
-                        SplitInstallSessionStatus.DOWNLOADED -> {
-
+                    SplitInstallSessionStatus.DOWNLOADED -> {
+                        CoroutineScope(Main).launch {
+                            this@MainViewModel.state.value =
+                                this@MainViewModel.state.value.copy(
+                                    featureProgressBarStateText = "DOWNLOADED $moduleName")
                         }
+                    }
 
-                        SplitInstallSessionStatus.PENDING -> {
-
+                    SplitInstallSessionStatus.PENDING -> {
+                        CoroutineScope(Main).launch {
+                            this@MainViewModel.state.value =
+                                this@MainViewModel.state.value.copy(
+                                    featureProgressBarStateText = "PENDING $moduleName")
                         }
+                    }
 
-                        SplitInstallSessionStatus.UNKNOWN -> {
+                    SplitInstallSessionStatus.UNKNOWN -> {
+                        CoroutineScope(Main).launch {
                             this@MainViewModel.state.value =
                                 this@MainViewModel.state.value.copy(
                                     featureProgressBarStateText = "UNKNOWN $moduleName")
-                            //navController.popBackStack()
                         }
                     }
                 }
             }
         }
+    }
 
     init {
         splitInstallManager.registerListener(listener)
