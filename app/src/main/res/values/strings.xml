@@ -17,8 +17,14 @@
 
 
 
-    <string name="module_login">ui_login</string>
+
     <string name="loading">Loading</string>
+
+
+
+
+    <string name="module_login">ui_login</string>
+    <string name="login_plugin">com.gm.template.ui_login.plugin.LoginPluginInterfaceImpl</string>
 
 
 </resources>

@@ -212,10 +212,7 @@ class MainViewModel
             } catch (e: Exception) {
                 Toast.makeText(application, e.message, Toast.LENGTH_SHORT).show()
             } finally {
-                CoroutineScope(Main).launch {
-                    delay(50)
-                    state.value = state.value.copy(processingNavigation = false)
-                }
+                state.value = state.value.copy(processingNavigation = false)
             }
         }
     }

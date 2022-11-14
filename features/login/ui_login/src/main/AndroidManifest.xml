@@ -14,7 +14,7 @@
     <application>
         <meta-data
             android:name="ui_login"
-            android:value="com.gm.template.ui_login.plugin.LoginPluginInterfaceImpl" />
+            android:value="@string/login_plugin" />
     </application>
 
 </manifest>
