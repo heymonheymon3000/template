@@ -202,6 +202,7 @@ dependencies {
 ////    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$versions.coroutines"
 ////    testImplementation "org.junit.jupiter:junit-jupiter-api:$versions.junitJupiter"
 ////    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$versions.junitJupiter"
+    implementation(kotlin("reflect"))
 }
 
 plugins {

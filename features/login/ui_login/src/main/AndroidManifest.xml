@@ -8,11 +8,14 @@
         <dist:delivery>
             <dist:on-demand />
         </dist:delivery>
-
         <dist:fusing dist:include="true" />
     </dist:module>
 
     <application>
+        <meta-data
+            android:name="ui_login"
+            android:value="com.gm.template.ui_login.plugin.LoginPluginInterfaceImpl" />
+
         <service
             android:name=".plugin.PluginLogin"
             android:enabled="true"

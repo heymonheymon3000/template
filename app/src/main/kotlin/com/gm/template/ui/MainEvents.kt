@@ -17,6 +17,9 @@ sealed class MainEvents {
     data class OnLoadFeatureEvent(
         val pluginFragment: PluginFragment): MainEvents()
 
+    data class OnLoadFeatureNavGraphEvent(
+        val navGraphId: Int): MainEvents()
+
     data class OnLoadFragmentByActionEvent(
         val pluginActionName: String): MainEvents()
 }

@@ -5,10 +5,10 @@ import android.app.Application
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.os.IBinder
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -20,24 +20,24 @@ import com.gm.template.components.util.UIComponentQueueUtil
 import com.gm.template.core.domain.Queue
 import com.gm.template.core.domain.UIComponent
 import com.gm.template.core.util.Event
-import com.gm.template.plugin.IPluginInterface
-import com.gm.template.plugin.Plugin
-import com.gm.template.plugin.PluginFragment
-import com.gm.template.plugin.PluginManager
+import com.gm.template.plugin.*
 import com.google.android.play.core.splitcompat.SplitCompat
+import com.google.android.play.core.splitinstall.SplitInstallException
 import com.google.android.play.core.splitinstall.SplitInstallManagerFactory
 import com.google.android.play.core.splitinstall.SplitInstallRequest
 import com.google.android.play.core.splitinstall.SplitInstallStateUpdatedListener
+import com.google.android.play.core.splitinstall.model.SplitInstallErrorCode
 import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
-import kotlin.collections.ArrayList
 
 @HiltViewModel
 class MainViewModel
@@ -102,6 +102,10 @@ class MainViewModel
                     }
 
                     SplitInstallSessionStatus.DOWNLOADING -> {
+                        val totalBytes = state.totalBytesToDownload()
+                        val progress = state.bytesDownloaded()
+                        // Update progress bar.
+
                         CoroutineScope(Main).launch {
                             this@MainViewModel.state.value =
                                 this@MainViewModel.state.value.copy(
@@ -199,6 +203,11 @@ class MainViewModel
                             Event(MainEvents.OnLoadFeatureEvent(event.pluginFragment))
                     }
 
+                    is MainEvents.OnLoadFeatureNavGraphEvent -> {
+                        _triggerMainEvent.value =
+                            Event(MainEvents.OnLoadFeatureNavGraphEvent(event.navGraphId))
+                    }
+
                     is MainEvents.OnRemoveHeadFromQueueEvent -> {
                         removeHeadMessage()
                     }
@@ -266,21 +275,45 @@ class MainViewModel
     private fun launchFeature(pluginActionName: String) {
         CoroutineScope(IO).launch {
             SplitCompat.install(application)
-            val plugins = findPluginByActionName(pluginActionName)
-            if (plugins.isNotEmpty()) {
-                val plugin = plugins[0]
-                state.value = state.value.copy(actionName = pluginActionName)
-                val bindIntent = Intent()
-                    .apply { setClassName(plugin.servicePackageName, plugin.serviceName) }
-                if(application.bindService(bindIntent, serviceConnection, AppCompatActivity.BIND_AUTO_CREATE)) {
-                    state.value = state.value.copy(mIsBound = true)
-                }
+            delay(5000)
 
-            } else {
-                Toast.makeText(application, "Plugin did not load", Toast.LENGTH_SHORT).show()
+            val applicationInfo: ApplicationInfo =
+                application.packageManager.getApplicationInfo(
+                    application.packageName,
+                    PackageManager.GET_META_DATA)
+
+           val plugin = applicationInfo.metaData.getString(pluginActionName)
+
+            plugin?.let { className ->
+                val navGraphId = (Class.forName(className).kotlin.objectInstance as PluginInterface).getNavGraphId()
+
+                withContext(Main) {
+                    Toast.makeText(application, "launchFeature $navGraphId", Toast.LENGTH_SHORT).show()
+                    onTriggerEvent(MainEvents.OnLoadFeatureNavGraphEvent(navGraphId))
+                }
             }
         }
     }
+
+//    private fun launchFeature(pluginActionName: String) {
+//        CoroutineScope(IO).launch {
+//            SplitCompat.install(application)
+//            delay(5000)
+//            val plugins = findPluginByActionName(pluginActionName)
+//            if (plugins.isNotEmpty()) {
+//                val plugin = plugins[0]
+//                state.value = state.value.copy(actionName = pluginActionName)
+//                val bindIntent = Intent()
+//                    .apply { setClassName(plugin.servicePackageName, plugin.serviceName) }
+//                if(application.bindService(bindIntent, serviceConnection, AppCompatActivity.BIND_AUTO_CREATE)) {
+//                    state.value = state.value.copy(mIsBound = true)
+//                }
+//
+//            } else {
+//                Toast.makeText(application, "Plugin did not load", Toast.LENGTH_SHORT).show()
+//            }
+//        }
+//    }
 
     private fun requestFeatureInstall(pluginActionName: String) {
         val request = SplitInstallRequest.newBuilder()
@@ -292,9 +325,78 @@ class MainViewModel
             .addOnSuccessListener { id ->
                 sessionId = id
             }
-            .addOnFailureListener {
+            .addOnFailureListener { exception ->
                 Toast.makeText(application, "Error requesting module install $pluginActionName", Toast.LENGTH_SHORT).show()
-                Toast.makeText(application, it.message, Toast.LENGTH_SHORT).show()
+                Toast.makeText(application, exception.message, Toast.LENGTH_SHORT).show()
+                when ((exception as SplitInstallException).errorCode) {
+                    SplitInstallErrorCode.NETWORK_ERROR -> {
+
+                    }
+
+                    SplitInstallErrorCode.ACTIVE_SESSIONS_LIMIT_EXCEEDED -> {
+                        checkForActiveDownloads()
+                    }
+
+                    SplitInstallErrorCode.ACCESS_DENIED -> {
+                        TODO()
+                    }
+
+                    SplitInstallErrorCode.API_NOT_AVAILABLE -> {
+                        TODO()
+                    }
+
+                    SplitInstallErrorCode.APP_NOT_OWNED -> {
+                        TODO()
+                    }
+
+                    SplitInstallErrorCode.INCOMPATIBLE_WITH_EXISTING_SESSION -> {
+                        TODO()
+                    }
+
+                    SplitInstallErrorCode.INSUFFICIENT_STORAGE -> {
+                        TODO()
+                    }
+
+                    SplitInstallErrorCode.INTERNAL_ERROR -> {
+                        TODO()
+                    }
+
+                    SplitInstallErrorCode.INVALID_REQUEST -> {
+                        TODO()
+                    }
+
+                    SplitInstallErrorCode.MODULE_UNAVAILABLE -> {
+                        TODO()
+                    }
+
+                    SplitInstallErrorCode.NO_ERROR -> {
+                        TODO()
+                    }
+
+                    SplitInstallErrorCode.PLAY_STORE_NOT_FOUND -> {
+                        TODO()
+                    }
+
+                    SplitInstallErrorCode.SERVICE_DIED -> {
+                        TODO()
+                    }
+
+                    SplitInstallErrorCode.SESSION_NOT_FOUND -> {
+                        TODO()
+                    }
+
+                    SplitInstallErrorCode.SPLITCOMPAT_COPY_ERROR -> {
+                        TODO()
+                    }
+
+                    SplitInstallErrorCode.SPLITCOMPAT_EMULATION_ERROR -> {
+                        TODO()
+                    }
+
+                    SplitInstallErrorCode.SPLITCOMPAT_VERIFICATION_ERROR -> {
+                        TODO()
+                    }
+                }
             }
 
         var navOptions: NavOptions? = null
@@ -313,5 +415,22 @@ class MainViewModel
                 null,
                 navOptions)
         }
+    }
+
+    private fun checkForActiveDownloads() {
+        splitInstallManager
+            // Returns a SplitInstallSessionState object for each active session as a List.
+            .sessionStates
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // Check for active sessions.
+                    for (state in task.result) {
+                        if (state.status() == SplitInstallSessionStatus.DOWNLOADING) {
+                            // Cancel the request, or request a deferred installation.
+                            splitInstallManager.cancelInstall(state.sessionId())
+                        }
+                    }
+                }
+            }
     }
 }
