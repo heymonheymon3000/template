@@ -14,4 +14,5 @@ data class MainState(
     val actionName: String = "ui_login",
     val pluginActionName: String = "ui_login",
     val addToBackStack: Boolean = false,
+    val processingNavigation: Boolean = false
 )

@@ -1,13 +1,8 @@
 package com.gm.template.ui
 
-import android.annotation.SuppressLint
 import android.app.Application
-import android.content.ComponentName
-import android.content.Intent
-import android.content.ServiceConnection
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
-import android.os.IBinder
 import android.widget.Toast
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -32,7 +27,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
 import kotlinx.coroutines.Dispatchers.Main
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -54,38 +48,6 @@ class MainViewModel
         MutableStateFlow(Event(null))
     val triggerMainEvent: StateFlow<Event<MainEvents?>> get() = _triggerMainEvent
 
-    private val serviceConnection = object : ServiceConnection {
-        var pluginInterface: IPluginInterface? = null
-        var pluginFragment: PluginFragment? = null
-
-        override fun onServiceConnected(componentName: ComponentName?, binder: IBinder?) {
-            pluginInterface = IPluginInterface.Stub.asInterface(binder)
-            pluginInterface?.let {
-                try {
-                    it.registerFragment("some fragment name")
-                    pluginFragment = PluginManager.getInstance(application)
-                        .getPluginFragmentByName(state.value.actionName)
-                    pluginFragment?.let { plugin ->
-                        plugin.argument = state.value.arguments
-                        onTriggerEvent(MainEvents.OnLoadFeatureEvent(plugin))
-                    }
-                } catch (e: Exception) {
-                    Toast.makeText(application, "Something wrong", Toast.LENGTH_SHORT).show()
-                } finally {
-                    if (state.value.mIsBound) {
-                        state.value = state.value.copy(mIsBound = false)
-                        application.unbindService(this)
-                    }
-                }
-            }
-        }
-
-        override fun onServiceDisconnected(componentName: ComponentName?) {
-            pluginInterface = null
-            state.value = state.value.copy(mIsBound = false)
-        }
-    }
-
     private var listener: SplitInstallStateUpdatedListener = SplitInstallStateUpdatedListener { state ->
         if (state.sessionId() == sessionId) {
             if(state.moduleNames().isNotEmpty()) {
@@ -102,8 +64,8 @@ class MainViewModel
                     }
 
                     SplitInstallSessionStatus.DOWNLOADING -> {
-                        val totalBytes = state.totalBytesToDownload()
-                        val progress = state.bytesDownloaded()
+//                        val totalBytes = state.totalBytesToDownload()
+//                        val progress = state.bytesDownloaded()
                         // Update progress bar.
 
                         CoroutineScope(Main).launch {
@@ -198,10 +160,10 @@ class MainViewModel
                         loadFragmentByAction(event.pluginActionName)
                     }
 
-                    is MainEvents.OnLoadFeatureEvent -> {
-                        _triggerMainEvent.value =
-                            Event(MainEvents.OnLoadFeatureEvent(event.pluginFragment))
-                    }
+//                    is MainEvents.OnLoadFeatureEvent -> {
+//                        _triggerMainEvent.value =
+//                            Event(MainEvents.OnLoadFeatureEvent(event.pluginFragment))
+//                    }
 
                     is MainEvents.OnLoadFeatureNavGraphEvent -> {
                         _triggerMainEvent.value =
@@ -215,6 +177,7 @@ class MainViewModel
                     is MainEvents.OnAppendToMessageQueueEvent -> {
                         appendToMessageQueue(event.uiComponent)
                     }
+
                     else -> {}
                 }
             } catch (e: Exception) {
@@ -239,81 +202,44 @@ class MainViewModel
             state.value = state.value.copy(errorQueue = Queue(mutableListOf())) // force recompose
             state.value = state.value.copy(errorQueue = queue)
         } catch (e: Exception){
-            //logger.logDebug("PRAViewModel","Nothing to remove from DialogQueue")
+            //logger.logDebug("")
         }
-    }
-
-    @SuppressLint("QueryPermissionsNeeded")
-    private fun findPluginByActionName(actionName: String): List<Plugin> {
-        val resolveInfoList = application.packageManager.queryIntentServices(
-            Intent(actionName),
-            PackageManager.GET_META_DATA
-        )
-        val plugins: MutableList<Plugin> = ArrayList()
-        if (resolveInfoList.size == 0) {
-            return plugins
-        }
-
-        for (resolveInfo in resolveInfoList) {
-            if (application.packageName.equals(resolveInfo.serviceInfo.processName, ignoreCase = true)) {
-                val plugin = Plugin(resolveInfo)
-                plugins.add(plugin)
-            }
-        }
-
-        return plugins
     }
 
     private fun loadFragmentByAction(pluginActionName: String ) {
-        if (splitInstallManager.installedModules.contains(pluginActionName)) {
-            launchFeature(pluginActionName)
-        } else {
-            requestFeatureInstall(pluginActionName)
-        }
-    }
-
-    private fun launchFeature(pluginActionName: String) {
-        CoroutineScope(IO).launch {
-            SplitCompat.install(application)
-            delay(5000)
-
-            val applicationInfo: ApplicationInfo =
-                application.packageManager.getApplicationInfo(
-                    application.packageName,
-                    PackageManager.GET_META_DATA)
-
-           val plugin = applicationInfo.metaData.getString(pluginActionName)
-
-            plugin?.let { className ->
-                val navGraphId = (Class.forName(className).kotlin.objectInstance as PluginInterface).getNavGraphId()
-
-                withContext(Main) {
-                    Toast.makeText(application, "launchFeature $navGraphId", Toast.LENGTH_SHORT).show()
-                    onTriggerEvent(MainEvents.OnLoadFeatureNavGraphEvent(navGraphId))
-                }
+        if(!state.value.processingNavigation) {
+            state.value = state.value.copy(processingNavigation = true)
+            if (splitInstallManager.installedModules.contains(pluginActionName)) {
+                launchFeature(pluginActionName)
+            } else {
+                requestFeatureInstall(pluginActionName)
             }
         }
     }
 
-//    private fun launchFeature(pluginActionName: String) {
-//        CoroutineScope(IO).launch {
-//            SplitCompat.install(application)
-//            delay(5000)
-//            val plugins = findPluginByActionName(pluginActionName)
-//            if (plugins.isNotEmpty()) {
-//                val plugin = plugins[0]
-//                state.value = state.value.copy(actionName = pluginActionName)
-//                val bindIntent = Intent()
-//                    .apply { setClassName(plugin.servicePackageName, plugin.serviceName) }
-//                if(application.bindService(bindIntent, serviceConnection, AppCompatActivity.BIND_AUTO_CREATE)) {
-//                    state.value = state.value.copy(mIsBound = true)
-//                }
-//
-//            } else {
-//                Toast.makeText(application, "Plugin did not load", Toast.LENGTH_SHORT).show()
-//            }
-//        }
-//    }
+    @Suppress("DEPRECATION")
+    private fun launchFeature(pluginActionName: String) {
+        CoroutineScope(IO).launch {
+            try {
+                SplitCompat.install(application)
+                val applicationInfo: ApplicationInfo =
+                    application.packageManager.getApplicationInfo(application.packageName, PackageManager.GET_META_DATA)
+
+                val plugin = applicationInfo.metaData.getString(pluginActionName)
+
+                plugin?.let { className ->
+                    val navGraphId = (Class.forName(className)?.kotlin?.objectInstance as PluginInterface).getNavGraphId()
+                    withContext(Main) {
+                        onTriggerEvent(MainEvents.OnLoadFeatureNavGraphEvent(navGraphId))
+                    }
+                }
+            } catch (e: Exception) {
+                Toast.makeText(application, e.message, Toast.LENGTH_SHORT).show()
+            } finally {
+                state.value = state.value.copy(processingNavigation = false)
+            }
+        }
+    }
 
     private fun requestFeatureInstall(pluginActionName: String) {
         val request = SplitInstallRequest.newBuilder()
@@ -377,10 +303,6 @@ class MainViewModel
                         TODO()
                     }
 
-                    SplitInstallErrorCode.SERVICE_DIED -> {
-                        TODO()
-                    }
-
                     SplitInstallErrorCode.SESSION_NOT_FOUND -> {
                         TODO()
                     }
@@ -396,6 +318,8 @@ class MainViewModel
                     SplitInstallErrorCode.SPLITCOMPAT_VERIFICATION_ERROR -> {
                         TODO()
                     }
+
+                    else -> {}
                 }
             }
 
@@ -434,3 +358,81 @@ class MainViewModel
             }
     }
 }
+
+
+
+
+
+//    private fun launchFeature(pluginActionName: String) {
+//        CoroutineScope(IO).launch {
+//            SplitCompat.install(application)
+//            delay(5000)
+//            val plugins = findPluginByActionName(pluginActionName)
+//            if (plugins.isNotEmpty()) {
+//                val plugin = plugins[0]
+//                state.value = state.value.copy(actionName = pluginActionName)
+//                val bindIntent = Intent()
+//                    .apply { setClassName(plugin.servicePackageName, plugin.serviceName) }
+//                if(application.bindService(bindIntent, serviceConnection, AppCompatActivity.BIND_AUTO_CREATE)) {
+//                    state.value = state.value.copy(mIsBound = true)
+//                }
+//
+//            } else {
+//                Toast.makeText(application, "Plugin did not load", Toast.LENGTH_SHORT).show()
+//            }
+//        }
+//    }
+
+
+//@SuppressLint("QueryPermissionsNeeded")
+//private fun findPluginByActionName(actionName: String): List<Plugin> {
+//    val resolveInfoList = application.packageManager.queryIntentServices(
+//        Intent(actionName),
+//        PackageManager.GET_META_DATA
+//    )
+//    val plugins: MutableList<Plugin> = ArrayList()
+//    if (resolveInfoList.size == 0) {
+//        return plugins
+//    }
+//
+//    for (resolveInfo in resolveInfoList) {
+//        if (application.packageName.equals(resolveInfo.serviceInfo.processName, ignoreCase = true)) {
+//            val plugin = Plugin(resolveInfo)
+//            plugins.add(plugin)
+//        }
+//    }
+//
+//    return plugins
+//}
+
+//    private val serviceConnection = object : ServiceConnection {
+//        var pluginInterface: IPluginInterface? = null
+//        var pluginFragment: PluginFragment? = null
+//
+//        override fun onServiceConnected(componentName: ComponentName?, binder: IBinder?) {
+//            pluginInterface = IPluginInterface.Stub.asInterface(binder)
+//            pluginInterface?.let {
+//                try {
+//                    it.registerFragment("some fragment name")
+//                    pluginFragment = PluginManager.getInstance(application)
+//                        .getPluginFragmentByName(state.value.actionName)
+//                    pluginFragment?.let { plugin ->
+//                        plugin.argument = state.value.arguments
+//                        onTriggerEvent(MainEvents.OnLoadFeatureEvent(plugin))
+//                    }
+//                } catch (e: Exception) {
+//                    Toast.makeText(application, "Something wrong", Toast.LENGTH_SHORT).show()
+//                } finally {
+//                    if (state.value.mIsBound) {
+//                        state.value = state.value.copy(mIsBound = false)
+//                        application.unbindService(this)
+//                    }
+//                }
+//            }
+//        }
+//
+//        override fun onServiceDisconnected(componentName: ComponentName?) {
+//            pluginInterface = null
+//            state.value = state.value.copy(mIsBound = false)
+//        }
+//    }
