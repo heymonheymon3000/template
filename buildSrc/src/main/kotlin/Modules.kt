@@ -27,4 +27,11 @@ object Modules {
     const val login_domain  = ":features:login:login-domain"
     const val login_interactors  = ":features:login:login-interactors"
     const val ui_login  = ":features:login:ui_login"
+
+    // Home
+    const val home_datasource  = ":features:home:home-datasource"
+    const val home_datasource_test  = ":features:home:home-datasource-test"
+    const val home_domain  = ":features:home:home-domain"
+    const val home_interactors  = ":features:home:home-interactors"
+    const val ui_home  = ":features:home:ui_home"
 }

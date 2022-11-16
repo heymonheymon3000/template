@@ -83,6 +83,7 @@ android {
     setDynamicFeatures(
         mutableSetOf(
             Modules.ui_login,
+            Modules.ui_home,
         ))
 }
 
@@ -101,6 +102,17 @@ dependencies {
     api (platform(Google.firebaseBom))
     api (Google.firebaseCrashlytics)
     api (Google.analytics)
+    api (Google.firebase_auth)
+    api (Google.firebase_ui_auth)
+    api (Google.play_services_auth)
+
+    // Facebook Android SDK (only required for Facebook Login)
+    // Used in FacebookLoginActivity.
+    api ("com.facebook.android:facebook-login:13.2.0")
+    api ("androidx.browser:browser:1.4.0")
+
+    // Add the dependency for the Firebase Authentication library
+    // When using the BoM, you don't specify versions in Firebase library dependencies
 //    "implementation"(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 //
 //    "api"(project(Modules.acoustic, configuration = "default"))

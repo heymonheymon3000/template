@@ -8,11 +8,21 @@ object Google {
     private const val gsonVersion = "2.8.9"
     const val gson = "com.google.code.gson:gson:$gsonVersion"
 
-    private const val firebaseBomVersion = "31.0.2"
+    private const val firebaseBomVersion = "31.0.3"
     const val firebaseBom = "com.google.firebase:firebase-bom:$firebaseBomVersion"
     // no need to specify version when using the Bom above
     const val firebaseCrashlytics = "com.google.firebase:firebase-crashlytics-ktx"
     const val analytics =  "com.google.firebase:firebase-analytics-ktx"
+
+
+    // Google Identity Services SDK (only required for Auth with Google)
+    const val play_services_auth  = "com.google.android.gms:play-services-auth:20.3.0"
+
+    // Firebase UI
+    // Used in FirebaseUIActivity
+    // Firebase Authentication (Kotlin)
+    const val firebase_auth  = "com.google.firebase:firebase-auth-ktx"
+    const val firebase_ui_auth  = "com.firebaseui:firebase-ui-auth:8.0.2"
 
     const val googleServicesPluginVersion = "4.3.14"
     const val firebaseCrashlyticsPluginVersion = "2.8.1"

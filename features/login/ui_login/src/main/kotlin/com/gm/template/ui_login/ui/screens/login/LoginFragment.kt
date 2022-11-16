@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.gm.template.di.DaggerDependencies
 import com.gm.template.plugin.BaseFragment
 import com.gm.template.ui.MainActivityInterface
+import com.gm.template.ui.MainViewModel
 import com.gm.template.ui.theme.TemplateTheme
 import com.gm.template.ui_login.di.DaggerLoginComponent
 import com.gm.template.ui_login.ui.LoginViewModel
@@ -24,6 +25,10 @@ class LoginFragment: BaseFragment() {
         ViewModelProvider(requireActivity(), viewModelFactory)[LoginViewModel::class.java]
     }
 
+    private val mainViewModel: MainViewModel by lazy {
+        ViewModelProvider(requireActivity())[MainViewModel::class.java]
+    }
+
     private var mainActivityInterface: MainActivityInterface? = null
 
     override fun onCreateView(
@@ -34,7 +39,9 @@ class LoginFragment: BaseFragment() {
         return ComposeView(requireContext()).apply {
             setContent {
                 TemplateTheme {
-                    LoginScreen(state = viewModel.state.value,
+                    LoginScreen(
+                        mainViewModel = mainViewModel,
+                        state = viewModel.state.value,
                         events = viewModel::onTriggerEvent) }
             }
         }

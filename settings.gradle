@@ -50,3 +50,10 @@ include ':features:login:login-domain'
 include ':features:login:login-interactors'
 include ':features:login:ui_login'
 
+// Home
+include ':features:home:home-datasource'
+include ':features:home:home-datasource-test'
+include ':features:home:home-domain'
+include ':features:home:home-interactors'
+include ':features:home:ui_home'
+

@@ -8,6 +8,7 @@
       <module name="Template.buildSrc" target="11" />
       <module name="Template.buildSrc.main" target="11" />
       <module name="Template.buildSrc.test" target="11" />
+      <module name="Template.features.home.ui_home" target="11" />
       <module name="Template.features.login.ui_login" target="11" />
     </bytecodeTargetLevel>
   </component>

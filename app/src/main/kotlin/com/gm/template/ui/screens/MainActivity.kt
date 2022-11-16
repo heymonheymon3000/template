@@ -63,6 +63,9 @@ class MainActivity : BaseActivity(), MainActivityInterface {
                                     loadFeature(mainEvent.navGraphId )
                                 }
 
+                                is MainEvents.OnPopStackEvent -> { navController.popBackStack() }
+
+
                                 else -> {}
                             }
                         }

@@ -23,6 +23,12 @@
             <option value="$PROJECT_DIR$/app/plugin" />
             <option value="$PROJECT_DIR$/buildSrc" />
             <option value="$PROJECT_DIR$/features" />
+            <option value="$PROJECT_DIR$/features/home" />
+            <option value="$PROJECT_DIR$/features/home/home-datasource" />
+            <option value="$PROJECT_DIR$/features/home/home-datasource-test" />
+            <option value="$PROJECT_DIR$/features/home/home-domain" />
+            <option value="$PROJECT_DIR$/features/home/home-interactors" />
+            <option value="$PROJECT_DIR$/features/home/ui_home" />
             <option value="$PROJECT_DIR$/features/login" />
             <option value="$PROJECT_DIR$/features/login/login-datasource" />
             <option value="$PROJECT_DIR$/features/login/login-datasource-test" />

@@ -11,8 +11,8 @@ data class MainState(
     var errorQueue: Queue<UIComponent> = Queue(mutableListOf()),
     val mIsBound: Boolean = false,
     val arguments: HashMap<String, Any> = HashMap(),
-    val actionName: String = "ui_login",
-    val pluginActionName: String = "ui_login",
+    val actionName: String = "ui_home",
+    val pluginActionName: String = "ui_home",
     val addToBackStack: Boolean = false,
     val processingNavigation: Boolean = false
 )

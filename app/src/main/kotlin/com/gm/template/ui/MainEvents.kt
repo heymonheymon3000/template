@@ -4,7 +4,7 @@ import com.gm.template.core.domain.UIComponent
 
 sealed class MainEvents {
     object OnRemoveHeadFromQueueEvent: MainEvents()
-
+    object OnPopStackEvent: MainEvents()
     data class OnAppendToMessageQueueEvent(
         val uiComponent: UIComponent
     ): MainEvents()

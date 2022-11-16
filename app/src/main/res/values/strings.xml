@@ -14,10 +14,6 @@
     <string name="installing_module_cancelled">Installing module cancelled</string>
     <string name="installing_notes_module">Installing notes module …</string>
     <string name="module_icon">Module icon</string>
-
-
-
-
     <string name="loading">Loading</string>
 
 
@@ -26,5 +22,6 @@
     <string name="module_login">ui_login</string>
     <string name="login_plugin">com.gm.template.ui_login.plugin.LoginPluginInterfaceImpl</string>
 
-
+    <string name="module_home">ui_home</string>
+    <string name="home_plugin">com.gm.template.ui_home.plugin.HomePluginInterfaceImpl</string>
 </resources>

@@ -63,82 +63,6 @@ class MainViewModel
 
                         launchFeature(moduleName)
                     }
-
-                    SplitInstallSessionStatus.DOWNLOADING -> {
-//                        val totalBytes = state.totalBytesToDownload()
-//                        val progress = state.bytesDownloaded()
-                        // Update progress bar.
-
-                        CoroutineScope(Main).launch {
-                            this@MainViewModel.state.value =
-                                this@MainViewModel.state.value.copy(
-                                    featureProgressBarStateText = "DOWNLOADING $moduleName")
-                        }
-                    }
-
-                    SplitInstallSessionStatus.REQUIRES_USER_CONFIRMATION -> {
-                        CoroutineScope(Main).launch {
-                            this@MainViewModel.state.value =
-                                this@MainViewModel.state.value.copy(
-                                    featureProgressBarStateText = "REQUIRES_USER_CONFIRMATION $moduleName")
-                        }
-                    }
-
-                    SplitInstallSessionStatus.INSTALLING -> {
-                        CoroutineScope(Main).launch {
-                            this@MainViewModel.state.value =
-                                this@MainViewModel.state.value.copy(
-                                    featureProgressBarStateText = "INSTALLING $moduleName")
-                        }
-                    }
-
-                    SplitInstallSessionStatus.FAILED -> {
-                        CoroutineScope(Main).launch {
-                            this@MainViewModel.state.value =
-                                this@MainViewModel.state.value.copy(
-                                    featureProgressBarStateText = "FAILED $moduleName")
-                        }
-                    }
-
-                    SplitInstallSessionStatus.CANCELED -> {
-                        CoroutineScope(Main).launch {
-                            this@MainViewModel.state.value =
-                                this@MainViewModel.state.value.copy(
-                                    featureProgressBarStateText = "CANCELED $moduleName")
-                        }
-                    }
-
-                    SplitInstallSessionStatus.CANCELING -> {
-                        CoroutineScope(Main).launch {
-                            this@MainViewModel.state.value =
-                                this@MainViewModel.state.value.copy(
-                                    featureProgressBarStateText = "CANCELING $moduleName")
-                        }
-                    }
-
-                    SplitInstallSessionStatus.DOWNLOADED -> {
-                        CoroutineScope(Main).launch {
-                            this@MainViewModel.state.value =
-                                this@MainViewModel.state.value.copy(
-                                    featureProgressBarStateText = "DOWNLOADED $moduleName")
-                        }
-                    }
-
-                    SplitInstallSessionStatus.PENDING -> {
-                        CoroutineScope(Main).launch {
-                            this@MainViewModel.state.value =
-                                this@MainViewModel.state.value.copy(
-                                    featureProgressBarStateText = "PENDING $moduleName")
-                        }
-                    }
-
-                    SplitInstallSessionStatus.UNKNOWN -> {
-                        CoroutineScope(Main).launch {
-                            this@MainViewModel.state.value =
-                                this@MainViewModel.state.value.copy(
-                                    featureProgressBarStateText = "UNKNOWN $moduleName")
-                        }
-                    }
                 }
             }
         }
@@ -157,6 +81,11 @@ class MainViewModel
                 when (event) {
                     is MainEvents.OnLoadFeatureByActionEvent -> {
                         loadFeatureByAction(event.pluginActionName)
+                    }
+
+                    is MainEvents.OnPopStackEvent -> {
+                        _triggerMainEvent.value =
+                            Event(MainEvents.OnPopStackEvent)
                     }
 
                     is MainEvents.OnLoadFeatureNavGraphEvent -> {
@@ -305,8 +234,6 @@ class MainViewModel
                 .setPopUpTo(it, inclusive = false, saveState = false)
                 .setEnterAnim(R.anim.fadein)
                 .setExitAnim(R.anim.fadeout)
-                .setPopEnterAnim(R.anim.fadein)
-                .setPopExitAnim(R.anim.fadeout)
                 .build()
         }
 

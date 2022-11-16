@@ -19,4 +19,13 @@
         app:defaultNavHost="true"
         app:navGraph="@navigation/nav_graph" />
 
+    <ProgressBar
+        android:id="@+id/installation_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:max="100"
+        android:indeterminate="true"
+        style="?android:attr/progressBarStyleHorizontal" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
